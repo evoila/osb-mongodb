@@ -4,7 +4,6 @@
 package de.evoila.cf.broker.custom.mongodb;
 
 import com.mongodb.BasicDBObject;
-import de.evoila.cf.broker.bean.ExistingEndpointBean;
 import de.evoila.cf.broker.model.*;
 import de.evoila.cf.broker.service.impl.BindingServiceImpl;
 import de.evoila.cf.broker.util.RandomString;
@@ -36,11 +35,11 @@ public class MongoDbBindingService extends BindingServiceImpl {
     private RandomString passwordRandomString = new RandomString(15);
 
     @Autowired(required = false)
-    private ExistingEndpointBean existingEndpointBean;
+    private MongoDBCustomImplementation mongoDBCustomImplementation;
 
     @Override
     protected void deleteBinding(ServiceInstanceBinding binding, ServiceInstance serviceInstance, Plan plan) {
-        MongoDbService mongoDbService = connection(serviceInstance, plan);
+        MongoDbService mongoDbService = mongoDBCustomImplementation.connection(serviceInstance, plan);
 
         mongoDbService.mongoClient().getDatabase(binding.getCredentials().get(DATABASE).toString())
                 .runCommand(new BasicDBObject("dropUser", binding.getCredentials().get(USERNAME)));
@@ -74,7 +73,7 @@ public class MongoDbBindingService extends BindingServiceImpl {
     protected Map<String, Object> createCredentials(String bindingId, ServiceInstanceBindingRequest serviceInstanceBindingRequest,
                                                     ServiceInstance serviceInstance, Plan plan, ServerAddress host) {
 
-        MongoDbService mongoDbService = connection(serviceInstance, plan);
+        MongoDbService mongoDbService = mongoDBCustomImplementation.connection(serviceInstance, plan);
 
         String username = usernameRandomString.nextString();
         String password = passwordRandomString.nextString();
@@ -103,19 +102,6 @@ public class MongoDbBindingService extends BindingServiceImpl {
         return credentials;
     }
 
-    private MongoDbService connection(ServiceInstance serviceInstance, Plan plan) {
-        MongoDbService mongoDbService = new MongoDbService();
-        ServerAddress host = serviceInstance.getHosts().get(0);
-        log.info("Opening connection to " + host.getIp() + ":" + host.getPort());
 
-        if(plan.getPlatform() == Platform.BOSH)
-            mongoDbService.createConnection(serviceInstance.getUsername(), serviceInstance.getPassword(),
-                    "admin", serviceInstance.getHosts());
-        else if (plan.getPlatform() == Platform.EXISTING_SERVICE)
-            mongoDbService.createConnection(existingEndpointBean.getUsername(), existingEndpointBean.getPassword(),
-                    existingEndpointBean.getDatabase(), existingEndpointBean.getHosts());
-
-        return mongoDbService;
-    }
 
 }
