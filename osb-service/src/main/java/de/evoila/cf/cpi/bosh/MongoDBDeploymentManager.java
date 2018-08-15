@@ -16,7 +16,7 @@ public class MongoDBDeploymentManager extends DeploymentManager {
     public static final String DATA_PATH = "data_path";
     public static final String REPLICA_SET_NAME = "replica-set-name";
 
-    MongoDBDeploymentManager(BoshProperties boshProperties, Environment environment){
+    public MongoDBDeploymentManager(BoshProperties boshProperties, Environment environment){
         super(boshProperties, environment);
     }
 
@@ -36,7 +36,6 @@ public class MongoDBDeploymentManager extends DeploymentManager {
 
         if(replset == null)
             auth.put("replica-set", new HashMap<>());
-
 
         String password = new RandomString(15).nextString();
         serviceInstance.setUsername(auth.get("user").toString());

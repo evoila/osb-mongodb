@@ -81,19 +81,26 @@ public class MongoDbBindingService extends BindingServiceImpl {
 
         MongoDBCustomImplementation.createUserForDatabase(mongoDbService, database, username, password);
 
-        String endpoint = ServiceInstanceUtils.connectionUrl(serviceInstance.getHosts());
+        List<ServerAddress> mongodbHosts = serviceInstance.getHosts();
+        String ingressInstanceGroup = plan.getMetadata().getIngressInstanceGroup();
+        if (ingressInstanceGroup != null && ingressInstanceGroup.length() > 0) {
+            mongodbHosts = ServiceInstanceUtils.filteredServerAddress(serviceInstance.getHosts(),ingressInstanceGroup);
+        }
+
+        String endpoint = ServiceInstanceUtils.connectionUrl(mongodbHosts);
 
         // When host is not empty, it is a service key
         if (host != null)
             endpoint = host.getIp() + ":" + host.getPort();
 
         String dbURL = String.format("mongodb://%s:%s@%s/%s", username, password, endpoint, database);
+
         String replicaSet = (String) serviceInstance.getParameters().get("replicaSet");
 
         if (replicaSet != null && !replicaSet.equals(""))
             dbURL += String.format("?replicaSet=%s", replicaSet);
 
-        Map<String, Object> credentials = new HashMap<>();
+        Map<String, Object> credentials = new HashMap<String, Object>();
         credentials.put(URI, dbURL);
         credentials.put(USERNAME, username);
         credentials.put(PASSWORD, password);

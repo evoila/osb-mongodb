@@ -4,7 +4,6 @@ import de.evoila.cf.broker.bean.BoshProperties;
 import de.evoila.cf.broker.exception.PlatformException;
 import de.evoila.cf.broker.model.DashboardClient;
 import de.evoila.cf.broker.model.Plan;
-import de.evoila.cf.broker.model.ServerAddress;
 import de.evoila.cf.broker.model.ServiceInstance;
 import de.evoila.cf.broker.repository.PlatformRepository;
 import de.evoila.cf.broker.service.CatalogService;
@@ -18,7 +17,6 @@ import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Service;
 import rx.Observable;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -28,7 +26,7 @@ public class MongoDBBoshPlatformService extends BoshPlatformService {
 
     private static final int defaultPort = 27017;
 
-    MongoDBBoshPlatformService (PlatformRepository repository, CatalogService catalogService,
+    MongoDBBoshPlatformService(PlatformRepository repository, CatalogService catalogService,
                                 ServicePortAvailabilityVerifier availabilityVerifier, BoshProperties boshProperties,
                                 Optional<DashboardClient> dashboardClient,
                                 Environment environment) {
@@ -51,19 +49,13 @@ public class MongoDBBoshPlatformService extends BoshPlatformService {
     protected void runDeleteErrands (ServiceInstance instance, Deployment deployment, Observable<List<ErrandSummary>> errands) { }
 
     @Override
-    protected void updateHosts (ServiceInstance in, Plan plan, Deployment deployment) {
+    protected void updateHosts (ServiceInstance serviceInstance, Plan plan, Deployment deployment) {
+        List<Vm> vms = super.getVms(serviceInstance);
+        serviceInstance.getHosts().clear();
 
-        List<Vm> vms = connection.connection().vms().listDetails(BoshPlatformService.DEPLOYMENT_NAME_PREFIX + in.getId()).toBlocking().first();
-        if(in.getHosts() == null)
-            in.setHosts(new ArrayList<>());
-
-        in.getHosts().clear();
-
-        vms.forEach(vm -> {
-            in.getHosts().add(new ServerAddress("Host-" + vm.getIndex(), vm.getIps().get(0), defaultPort));
-        });
+        vms.forEach(vm -> serviceInstance.getHosts().add(super.toServerAddress(vm, defaultPort)));
     }
 
     @Override
-    public void postDeleteInstance(ServiceInstance serviceInstance) throws PlatformException { }
+    public void postDeleteInstance(ServiceInstance serviceInstance) { }
 }
