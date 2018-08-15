@@ -6,6 +6,7 @@ import de.evoila.cf.broker.model.ServiceInstance;
 import de.evoila.cf.broker.util.RandomString;
 import de.evoila.cf.cpi.bosh.deployment.DeploymentManager;
 import de.evoila.cf.cpi.bosh.deployment.manifest.Manifest;
+import org.springframework.core.env.Environment;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -15,8 +16,8 @@ public class MongoDBDeploymentManager extends DeploymentManager {
     public static final String DATA_PATH = "data_path";
     public static final String REPLICA_SET_NAME = "replica-set-name";
 
-    MongoDBDeploymentManager(BoshProperties boshProperties){
-        super(boshProperties);
+    MongoDBDeploymentManager(BoshProperties boshProperties, Environment environment){
+        super(boshProperties, environment);
     }
 
     @Override
