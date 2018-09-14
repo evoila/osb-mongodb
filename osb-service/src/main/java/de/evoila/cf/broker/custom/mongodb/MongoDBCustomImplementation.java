@@ -11,7 +11,6 @@ import de.evoila.cf.broker.model.ServerAddress;
 import de.evoila.cf.broker.model.ServiceInstance;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.Map;
@@ -24,8 +23,11 @@ public class MongoDBCustomImplementation {
 
     private Logger log = LoggerFactory.getLogger(MongoDBCustomImplementation.class);
 
-    @Autowired(required = false)
     private ExistingEndpointBean existingEndpointBean;
+
+    public MongoDBCustomImplementation(ExistingEndpointBean existingEndpointBean) {
+        this.existingEndpointBean = existingEndpointBean;
+    }
 
     public static void createUserForDatabase(MongoDbService mongoDbService, String database, String username,
                                              String password) {

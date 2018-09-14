@@ -11,8 +11,9 @@ import de.evoila.cf.broker.exception.PlatformException;
 import de.evoila.cf.broker.model.Plan;
 import de.evoila.cf.broker.model.Platform;
 import de.evoila.cf.broker.model.ServiceInstance;
+import de.evoila.cf.broker.repository.PlatformRepository;
+import de.evoila.cf.broker.service.availability.ServicePortAvailabilityVerifier;
 import de.evoila.cf.broker.util.RandomString;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.stereotype.Service;
 
@@ -30,13 +31,18 @@ public class MongoDbExistingServiceFactory extends ExistingServiceFactory {
     RandomString usernameRandomString = new RandomString(10);
     RandomString passwordRandomString = new RandomString(15);
 
-    @Autowired
     private ExistingEndpointBean existingEndpointBean;
 
-    @Autowired
-	private MongoDBCustomImplementation mongodb;
+	private MongoDBCustomImplementation mongoDBCustomImplementation;
 
-	public void createDatabase(MongoDbService connection, String database) throws PlatformException {
+    public MongoDbExistingServiceFactory(PlatformRepository platformRepository, ServicePortAvailabilityVerifier portAvailabilityVerifier, ExistingEndpointBean existingEndpointBean,
+                                         MongoDBCustomImplementation mongoDBCustomImplementation) {
+        super(platformRepository, portAvailabilityVerifier, existingEndpointBean);
+        this.existingEndpointBean = existingEndpointBean;
+        this.mongoDBCustomImplementation = mongoDBCustomImplementation;
+    }
+
+    public void createDatabase(MongoDbService connection, String database) throws PlatformException {
 		try {
 			MongoClient mongo = connection.mongoClient();
 			mongo.setWriteConcern(WriteConcern.JOURNAL_SAFE);

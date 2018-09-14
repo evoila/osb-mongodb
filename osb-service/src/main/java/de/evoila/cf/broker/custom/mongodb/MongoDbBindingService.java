@@ -5,12 +5,16 @@ package de.evoila.cf.broker.custom.mongodb;
 
 import com.mongodb.BasicDBObject;
 import de.evoila.cf.broker.model.*;
+import de.evoila.cf.broker.repository.BindingRepository;
+import de.evoila.cf.broker.repository.RouteBindingRepository;
+import de.evoila.cf.broker.repository.ServiceDefinitionRepository;
+import de.evoila.cf.broker.repository.ServiceInstanceRepository;
+import de.evoila.cf.broker.service.HAProxyService;
 import de.evoila.cf.broker.service.impl.BindingServiceImpl;
 import de.evoila.cf.broker.util.RandomString;
 import de.evoila.cf.broker.util.ServiceInstanceUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.HashMap;
@@ -34,8 +38,13 @@ public class MongoDbBindingService extends BindingServiceImpl {
 	private RandomString usernameRandomString = new RandomString(10);
     private RandomString passwordRandomString = new RandomString(15);
 
-    @Autowired(required = false)
     private MongoDBCustomImplementation mongoDBCustomImplementation;
+
+    public MongoDbBindingService(BindingRepository bindingRepository, ServiceDefinitionRepository serviceDefinitionRepository, ServiceInstanceRepository serviceInstanceRepository,
+                                 RouteBindingRepository routeBindingRepository, HAProxyService haProxyService, MongoDBCustomImplementation mongoDBCustomImplementation) {
+        super(bindingRepository, serviceDefinitionRepository, serviceInstanceRepository, routeBindingRepository, haProxyService);
+        this.mongoDBCustomImplementation = mongoDBCustomImplementation;
+    }
 
     @Override
     protected void unbindService(ServiceInstanceBinding binding, ServiceInstance serviceInstance, Plan plan) {
