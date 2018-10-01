@@ -10,7 +10,6 @@ import de.evoila.cf.broker.service.CatalogService;
 import de.evoila.cf.broker.service.availability.ServicePortAvailabilityVerifier;
 import io.bosh.client.deployments.Deployment;
 import io.bosh.client.errands.ErrandSummary;
-import io.bosh.client.tasks.Task;
 import io.bosh.client.vms.Vm;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.core.env.Environment;
@@ -35,16 +34,9 @@ public class MongoDBBoshPlatformService extends BoshPlatformService {
                 new MongoDBDeploymentManager(boshProperties, environment));
     }
 
-    public void runCreateErrands (ServiceInstance instance, Plan plan, Deployment deployment, Observable<List<ErrandSummary>> errands) throws PlatformException {
-        Task task = super.connection.connection().errands().runErrand(deployment.getName(), "create-replset").toBlocking().first();
-        super.waitForTaskCompletion(task);
+    public void runCreateErrands (ServiceInstance instance, Plan plan, Deployment deployment, Observable<List<ErrandSummary>> errands) throws PlatformException { }
 
-    }
-
-    protected void runUpdateErrands (ServiceInstance instance, Plan plan, Deployment deployment, Observable<List<ErrandSummary>> errands) throws PlatformException {
-        Task task = super.connection.connection().errands().runErrand(deployment.getName(), "reconfigure-replset").toBlocking().first();
-        super.waitForTaskCompletion(task);
-    }
+    protected void runUpdateErrands (ServiceInstance instance, Plan plan, Deployment deployment, Observable<List<ErrandSummary>> errands) throws PlatformException { }
 
     protected void runDeleteErrands (ServiceInstance instance, Deployment deployment, Observable<List<ErrandSummary>> errands) { }
 
