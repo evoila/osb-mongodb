@@ -8,12 +8,11 @@ import de.evoila.cf.broker.custom.mongodb.MongoDbService;
 import de.evoila.cf.broker.exception.ServiceBrokerException;
 import de.evoila.cf.broker.exception.ServiceDefinitionDoesNotExistException;
 import de.evoila.cf.broker.exception.ServiceInstanceDoesNotExistException;
-import de.evoila.cf.broker.model.Plan;
 import de.evoila.cf.broker.model.ServiceInstance;
+import de.evoila.cf.broker.model.catalog.plan.Plan;
 import de.evoila.cf.broker.repository.ServiceDefinitionRepository;
 import de.evoila.cf.broker.repository.ServiceInstanceRepository;
 import de.evoila.cf.broker.service.BackupCustomService;
-import de.evoila.cf.model.EndpointCredential;
 import org.bson.Document;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.stereotype.Service;
@@ -67,24 +66,6 @@ public class BackupCustomServiceImpl implements BackupCustomService {
         }
 
         return result;
-    }
-
-    public EndpointCredential getCredentials(String serviceInstanceId) throws ServiceInstanceDoesNotExistException {
-        ServiceInstance instance = serviceInstanceRepository.getServiceInstance(serviceInstanceId);
-
-        if(instance == null || instance.getHosts().size() <= 0) {
-            throw new ServiceInstanceDoesNotExistException(serviceInstanceId);
-        }
-
-        EndpointCredential credential = new EndpointCredential();
-        credential.setServiceInstanceId(instance.getId());
-        credential.setUsername(instance.getUsername());
-        credential.setPassword(instance.getPassword());
-        credential.setHostname(instance.getHosts().get(0).getIp());
-        credential.setPort(instance.getHosts().get(0).getPort());
-        credential.setType(backupTypeConfiguration.getType());
-
-        return credential;
     }
 
 }

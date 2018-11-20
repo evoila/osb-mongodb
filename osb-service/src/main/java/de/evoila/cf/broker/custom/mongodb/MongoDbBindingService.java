@@ -4,11 +4,14 @@
 package de.evoila.cf.broker.custom.mongodb;
 
 import com.mongodb.BasicDBObject;
-import de.evoila.cf.broker.model.*;
-import de.evoila.cf.broker.repository.BindingRepository;
-import de.evoila.cf.broker.repository.RouteBindingRepository;
-import de.evoila.cf.broker.repository.ServiceDefinitionRepository;
-import de.evoila.cf.broker.repository.ServiceInstanceRepository;
+import de.evoila.cf.broker.model.RouteBinding;
+import de.evoila.cf.broker.model.ServiceInstance;
+import de.evoila.cf.broker.model.ServiceInstanceBinding;
+import de.evoila.cf.broker.model.ServiceInstanceBindingRequest;
+import de.evoila.cf.broker.model.catalog.ServerAddress;
+import de.evoila.cf.broker.model.catalog.plan.Plan;
+import de.evoila.cf.broker.repository.*;
+import de.evoila.cf.broker.service.AsyncBindingService;
 import de.evoila.cf.broker.service.HAProxyService;
 import de.evoila.cf.broker.service.impl.BindingServiceImpl;
 import de.evoila.cf.broker.util.RandomString;
@@ -40,9 +43,12 @@ public class MongoDbBindingService extends BindingServiceImpl {
 
     private MongoDBCustomImplementation mongoDBCustomImplementation;
 
-    public MongoDbBindingService(BindingRepository bindingRepository, ServiceDefinitionRepository serviceDefinitionRepository, ServiceInstanceRepository serviceInstanceRepository,
-                                 RouteBindingRepository routeBindingRepository, HAProxyService haProxyService, MongoDBCustomImplementation mongoDBCustomImplementation) {
-        super(bindingRepository, serviceDefinitionRepository, serviceInstanceRepository, routeBindingRepository, haProxyService);
+    public MongoDbBindingService(BindingRepository bindingRepository, ServiceDefinitionRepository serviceDefinitionRepository,
+                                 ServiceInstanceRepository serviceInstanceRepository, RouteBindingRepository routeBindingRepository,
+                                 HAProxyService haProxyService, MongoDBCustomImplementation mongoDBCustomImplementation, JobRepository jobRepository,
+                                 AsyncBindingService asyncBindingService, PlatformRepository platformRepository) {
+        super(bindingRepository, serviceDefinitionRepository, serviceInstanceRepository, routeBindingRepository,
+                haProxyService, jobRepository, asyncBindingService, platformRepository);
         this.mongoDBCustomImplementation = mongoDBCustomImplementation;
     }
 
@@ -53,12 +59,6 @@ public class MongoDbBindingService extends BindingServiceImpl {
         mongoDbService.mongoClient().getDatabase(binding.getCredentials().get(DATABASE).toString())
                 .runCommand(new BasicDBObject("dropUser", binding.getCredentials().get(USERNAME)));
     }
-
-    @Override
-    public ServiceInstanceBinding getServiceInstanceBinding(String id) {
-        throw new UnsupportedOperationException();
-    }
-
 
 	@Override
 	protected ServiceInstanceBinding bindServiceKey(String bindingId, ServiceInstanceBindingRequest serviceInstanceBindingRequest,
