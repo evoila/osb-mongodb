@@ -3,7 +3,6 @@
  */
 package de.evoila.cf.cpi.existing;
 
-import com.mongodb.*;
 import de.evoila.cf.broker.bean.ExistingEndpointBean;
 import de.evoila.cf.broker.custom.mongodb.MongoDBCustomImplementation;
 import de.evoila.cf.broker.custom.mongodb.MongoDbService;
@@ -23,7 +22,6 @@ import java.util.Map;
  * @author René Schollmeyer
  *
  */
-
 @Service
 @ConditionalOnBean(ExistingEndpointBean.class)
 public class MongoDbExistingServiceFactory extends ExistingServiceFactory {
@@ -35,39 +33,20 @@ public class MongoDbExistingServiceFactory extends ExistingServiceFactory {
 
 	private MongoDBCustomImplementation mongoDBCustomImplementation;
 
-    public MongoDbExistingServiceFactory(PlatformRepository platformRepository, ServicePortAvailabilityVerifier portAvailabilityVerifier, ExistingEndpointBean existingEndpointBean,
+    public MongoDbExistingServiceFactory(PlatformRepository platformRepository,
+                                         ServicePortAvailabilityVerifier portAvailabilityVerifier,
+                                         ExistingEndpointBean existingEndpointBean,
                                          MongoDBCustomImplementation mongoDBCustomImplementation) {
         super(platformRepository, portAvailabilityVerifier, existingEndpointBean);
         this.existingEndpointBean = existingEndpointBean;
         this.mongoDBCustomImplementation = mongoDBCustomImplementation;
     }
 
-    public void createDatabase(MongoDbService connection, String database) throws PlatformException {
-		try {
-			MongoClient mongo = connection.mongoClient();
-			mongo.setWriteConcern(WriteConcern.JOURNAL_SAFE);
-			DB db = mongo.getDB(database);
-			DBCollection collection = db.getCollection("_auth");
-			collection.save(new BasicDBObject("auth", "auth"));
-			collection.drop();
-		} catch(MongoException e) {
-			throw new PlatformException("Could not add to database", e);
-		}
-	}
-
-	public void deleteDatabase(MongoDbService connection, String database) throws PlatformException {
-		try {
-		    connection.mongoClient().dropDatabase(database);
-		} catch (MongoException e) {
-			throw new PlatformException("Could not remove from database", e);
-		}
-	}
-
     @Override
     public void deleteInstance(ServiceInstance serviceInstance, Plan plan) throws PlatformException {
         MongoDbService mongoDbService = this.connection(serviceInstance, plan);
 
-        deleteDatabase(mongoDbService, serviceInstance.getId());
+        mongoDBCustomImplementation.deleteDatabase(mongoDbService, serviceInstance.getId());
     }
 
     @Override
@@ -81,7 +60,7 @@ public class MongoDbExistingServiceFactory extends ExistingServiceFactory {
 
         MongoDbService mongoDbService = this.connection(serviceInstance, plan);
 
-        createDatabase(mongoDbService, serviceInstance.getId());
+        mongoDBCustomImplementation.createDatabase(mongoDbService, serviceInstance.getId());
 
         return serviceInstance;
     }

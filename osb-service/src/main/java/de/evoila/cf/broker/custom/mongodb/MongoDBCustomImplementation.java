@@ -3,8 +3,9 @@
  */
 package de.evoila.cf.broker.custom.mongodb;
 
-import com.mongodb.BasicDBObject;
+import com.mongodb.*;
 import de.evoila.cf.broker.bean.ExistingEndpointBean;
+import de.evoila.cf.broker.exception.PlatformException;
 import de.evoila.cf.broker.model.Platform;
 import de.evoila.cf.broker.model.ServiceInstance;
 import de.evoila.cf.broker.model.catalog.ServerAddress;
@@ -16,7 +17,7 @@ import org.springframework.stereotype.Service;
 import java.util.Map;
 
 /**
- * @author René
+ * @author @author René Schollmeyer
  */
 @Service
 public class MongoDBCustomImplementation {
@@ -27,6 +28,27 @@ public class MongoDBCustomImplementation {
 
     public MongoDBCustomImplementation(ExistingEndpointBean existingEndpointBean) {
         this.existingEndpointBean = existingEndpointBean;
+    }
+
+    public void createDatabase(MongoDbService connection, String database) throws PlatformException {
+        try {
+            MongoClient mongo = connection.mongoClient();
+            mongo.setWriteConcern(WriteConcern.JOURNAL_SAFE);
+            DB db = mongo.getDB(database);
+            DBCollection collection = db.getCollection("_auth");
+            collection.save(new BasicDBObject("auth", "auth"));
+            collection.drop();
+        } catch(MongoException e) {
+            throw new PlatformException("Could not add to database", e);
+        }
+    }
+
+    public void deleteDatabase(MongoDbService connection, String database) throws PlatformException {
+        try {
+            connection.mongoClient().dropDatabase(database);
+        } catch (MongoException e) {
+            throw new PlatformException("Could not remove from database", e);
+        }
     }
 
     public static void createUserForDatabase(MongoDbService mongoDbService, String database, String username,
