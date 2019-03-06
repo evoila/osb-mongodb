@@ -1,6 +1,3 @@
-/**
- * 
- */
 package de.evoila.cf.broker.custom.mongodb;
 
 import com.mongodb.BasicDBObject;
@@ -10,12 +7,14 @@ import de.evoila.cf.broker.model.ServiceInstanceBinding;
 import de.evoila.cf.broker.model.ServiceInstanceBindingRequest;
 import de.evoila.cf.broker.model.catalog.ServerAddress;
 import de.evoila.cf.broker.model.catalog.plan.Plan;
+import de.evoila.cf.broker.model.credential.UsernamePasswordCredential;
 import de.evoila.cf.broker.repository.*;
 import de.evoila.cf.broker.service.AsyncBindingService;
 import de.evoila.cf.broker.service.HAProxyService;
 import de.evoila.cf.broker.service.impl.BindingServiceImpl;
-import de.evoila.cf.broker.util.RandomString;
 import de.evoila.cf.broker.util.ServiceInstanceUtils;
+import de.evoila.cf.cpi.CredentialConstants;
+import de.evoila.cf.security.credentials.CredentialStore;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -26,7 +25,6 @@ import java.util.Map;
 
 /**
  * @author Johannes Hiemer.
- *
  */
 @Service
 public class MongoDbBindingService extends BindingServiceImpl {
@@ -38,26 +36,32 @@ public class MongoDbBindingService extends BindingServiceImpl {
     private static String PASSWORD = "password";
     private static String DATABASE = "database";
 
-	private RandomString usernameRandomString = new RandomString(10);
-    private RandomString passwordRandomString = new RandomString(15);
-
     private MongoDBCustomImplementation mongoDBCustomImplementation;
+
+    private CredentialStore credentialStore;
 
     public MongoDbBindingService(BindingRepository bindingRepository, ServiceDefinitionRepository serviceDefinitionRepository,
                                  ServiceInstanceRepository serviceInstanceRepository, RouteBindingRepository routeBindingRepository,
-                                 HAProxyService haProxyService, MongoDBCustomImplementation mongoDBCustomImplementation, JobRepository jobRepository,
-                                 AsyncBindingService asyncBindingService, PlatformRepository platformRepository) {
+                                 HAProxyService haProxyService, MongoDBCustomImplementation mongoDBCustomImplementation,
+                                 JobRepository jobRepository, AsyncBindingService asyncBindingService,
+                                 PlatformRepository platformRepository, CredentialStore credentialStore) {
         super(bindingRepository, serviceDefinitionRepository, serviceInstanceRepository, routeBindingRepository,
                 haProxyService, jobRepository, asyncBindingService, platformRepository);
+        this.credentialStore = credentialStore;
         this.mongoDBCustomImplementation = mongoDBCustomImplementation;
     }
 
     @Override
     protected void unbindService(ServiceInstanceBinding binding, ServiceInstance serviceInstance, Plan plan) {
-        MongoDbService mongoDbService = mongoDBCustomImplementation.connection(serviceInstance, plan);
+        UsernamePasswordCredential usernamePasswordCredential = credentialStore.getUser(serviceInstance, CredentialConstants.ROOT_CREDENTIALS);
+        MongoDbService mongoDbService = mongoDBCustomImplementation.connection(serviceInstance, plan, usernamePasswordCredential);
+
+        UsernamePasswordCredential bindingCredentials = credentialStore.getUser(serviceInstance, binding.getId());
 
         mongoDbService.mongoClient().getDatabase(binding.getCredentials().get(DATABASE).toString())
-                .runCommand(new BasicDBObject("dropUser", binding.getCredentials().get(USERNAME)));
+                .runCommand(new BasicDBObject("dropUser", bindingCredentials.getUsername()));
+
+        credentialStore.deleteCredentials(serviceInstance, binding.getId());
     }
 
 	@Override
@@ -81,11 +85,15 @@ public class MongoDbBindingService extends BindingServiceImpl {
     @Override
     protected Map<String, Object> createCredentials(String bindingId, ServiceInstanceBindingRequest serviceInstanceBindingRequest,
                                                     ServiceInstance serviceInstance, Plan plan, ServerAddress host) {
+        UsernamePasswordCredential usernamePasswordCredential = credentialStore.getUser(serviceInstance, CredentialConstants.ROOT_CREDENTIALS);
 
-        MongoDbService mongoDbService = mongoDBCustomImplementation.connection(serviceInstance, plan);
+        MongoDbService mongoDbService = mongoDBCustomImplementation.connection(serviceInstance, plan, usernamePasswordCredential);
 
-        String username = usernameRandomString.nextString();
-        String password = passwordRandomString.nextString();
+        credentialStore.createUser(serviceInstance, bindingId);
+        UsernamePasswordCredential bindingCredentials = credentialStore.getUser(serviceInstance, bindingId);
+
+        String username = bindingCredentials.getUsername();
+        String password = bindingCredentials.getPassword();
         String database = serviceInstance.getId();
 
         MongoDBCustomImplementation.createUserForDatabase(mongoDbService, database, username, password);

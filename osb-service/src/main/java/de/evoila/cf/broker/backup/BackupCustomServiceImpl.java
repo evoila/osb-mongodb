@@ -10,9 +10,12 @@ import de.evoila.cf.broker.exception.ServiceInstanceDoesNotExistException;
 import de.evoila.cf.broker.model.Platform;
 import de.evoila.cf.broker.model.ServiceInstance;
 import de.evoila.cf.broker.model.catalog.plan.Plan;
+import de.evoila.cf.broker.model.credential.UsernamePasswordCredential;
 import de.evoila.cf.broker.repository.ServiceDefinitionRepository;
 import de.evoila.cf.broker.repository.ServiceInstanceRepository;
 import de.evoila.cf.broker.service.BackupCustomService;
+import de.evoila.cf.cpi.CredentialConstants;
+import de.evoila.cf.security.credentials.CredentialStore;
 import org.bson.Document;
 import org.springframework.stereotype.Service;
 
@@ -31,29 +34,33 @@ public class BackupCustomServiceImpl implements BackupCustomService {
 
     private ServiceDefinitionRepository serviceDefinitionRepository;
 
+    private CredentialStore credentialStore;
+
     public BackupCustomServiceImpl(ServiceInstanceRepository serviceInstanceRepository,
                                    MongoDBCustomImplementation mongoDBCustomImplementation,
-                                   ServiceDefinitionRepository serviceDefinitionRepository) {
+                                   ServiceDefinitionRepository serviceDefinitionRepository,
+                                   CredentialStore credentialStore) {
         this.serviceInstanceRepository = serviceInstanceRepository;
         this.mongoDBCustomImplementation = mongoDBCustomImplementation;
         this.serviceDefinitionRepository = serviceDefinitionRepository;
+        this.credentialStore = credentialStore;
     }
 
     @Override
     public Map<String, String> getItems(String serviceInstanceId) throws ServiceInstanceDoesNotExistException,
             ServiceDefinitionDoesNotExistException {
-        ServiceInstance instance = serviceInstanceRepository.getServiceInstance(serviceInstanceId);
+        ServiceInstance serviceInstance = serviceInstanceRepository.getServiceInstance(serviceInstanceId);
 
-        if(instance == null || instance.getHosts().size() <= 0) {
+        if(serviceInstance == null || serviceInstance.getHosts().size() <= 0) {
             throw new ServiceInstanceDoesNotExistException(serviceInstanceId);
         }
 
-        Plan plan = serviceDefinitionRepository.getPlan(instance.getPlanId());
-
+        Plan plan = serviceDefinitionRepository.getPlan(serviceInstance.getPlanId());
 
         Map<String, String> result = new HashMap<>();
         if (plan.getPlatform().equals(Platform.BOSH)) {
-            MongoDbService mongoDbService = mongoDBCustomImplementation.connection(instance, plan);
+            UsernamePasswordCredential usernamePasswordCredential = credentialStore.getUser(serviceInstance, CredentialConstants.ROOT_CREDENTIALS);
+            MongoDbService mongoDbService = mongoDBCustomImplementation.connection(serviceInstance, plan, usernamePasswordCredential);
 
             try {
                 ListDatabasesIterable<Document> databases = mongoDbService.mongoClient().listDatabases();
@@ -66,31 +73,6 @@ public class BackupCustomServiceImpl implements BackupCustomService {
         }
 
         return result;
-    }
-
-    @Override
-    public void createItem(String serviceInstanceId, String name, Map<String, Object> parameters) throws ServiceInstanceDoesNotExistException,
-            ServiceDefinitionDoesNotExistException, ServiceBrokerException {
-        ServiceInstance instance = serviceInstanceRepository.getServiceInstance(serviceInstanceId);
-
-        if(instance == null || instance.getHosts().size() <= 0) {
-            throw new ServiceInstanceDoesNotExistException(serviceInstanceId);
-        }
-
-        Plan plan = serviceDefinitionRepository.getPlan(instance.getPlanId());
-
-        if (plan.getPlatform().equals(Platform.BOSH)) {
-            MongoDbService mongoDbService = mongoDBCustomImplementation.connection(instance, plan);
-
-            try {
-                mongoDBCustomImplementation.createDatabase(mongoDbService, name);
-            } catch (Exception ex) {
-                throw new ServiceBrokerException("Could not create Database", ex);
-            }
-
-        } else
-            throw new ServiceBrokerException("Creating items is not allowed in shared plans");
-
     }
 
 }
