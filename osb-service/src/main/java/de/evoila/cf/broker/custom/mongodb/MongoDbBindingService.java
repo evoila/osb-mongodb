@@ -52,37 +52,6 @@ public class MongoDbBindingService extends BindingServiceImpl {
     }
 
     @Override
-    protected void unbindService(ServiceInstanceBinding binding, ServiceInstance serviceInstance, Plan plan) {
-        UsernamePasswordCredential usernamePasswordCredential = credentialStore.getUser(serviceInstance, CredentialConstants.ROOT_CREDENTIALS);
-        MongoDbService mongoDbService = mongoDBCustomImplementation.connection(serviceInstance, plan, usernamePasswordCredential);
-
-        UsernamePasswordCredential bindingCredentials = credentialStore.getUser(serviceInstance, binding.getId());
-
-        mongoDbService.mongoClient().getDatabase(binding.getCredentials().get(DATABASE).toString())
-                .runCommand(new BasicDBObject("dropUser", bindingCredentials.getUsername()));
-
-        credentialStore.deleteCredentials(serviceInstance, binding.getId());
-    }
-
-	@Override
-	protected ServiceInstanceBinding bindServiceKey(String bindingId, ServiceInstanceBindingRequest serviceInstanceBindingRequest,
-                                                    ServiceInstance serviceInstance, Plan plan,
-			List<ServerAddress> externalAddresses) {
-
-		Map<String, Object> credentials = createCredentials(bindingId, null, serviceInstance, plan, externalAddresses.get(0));
-
-		ServiceInstanceBinding serviceInstanceBinding = new ServiceInstanceBinding(bindingId, serviceInstance.getId(),
-				credentials, null);
-		serviceInstanceBinding.setExternalServerAddresses(externalAddresses);
-		return serviceInstanceBinding;
-	}
-
-	@Override
-	protected RouteBinding bindRoute(ServiceInstance serviceInstance, String route) {
-		throw new UnsupportedOperationException();
-	}
-
-    @Override
     protected Map<String, Object> createCredentials(String bindingId, ServiceInstanceBindingRequest serviceInstanceBindingRequest,
                                                     ServiceInstance serviceInstance, Plan plan, ServerAddress host) {
         UsernamePasswordCredential usernamePasswordCredential = credentialStore.getUser(serviceInstance, CredentialConstants.ROOT_CREDENTIALS);
@@ -124,6 +93,37 @@ public class MongoDbBindingService extends BindingServiceImpl {
         credentials.put(DATABASE, database);
 
         return credentials;
+    }
+
+    @Override
+    protected void unbindService(ServiceInstanceBinding binding, ServiceInstance serviceInstance, Plan plan) {
+        UsernamePasswordCredential usernamePasswordCredential = credentialStore.getUser(serviceInstance, CredentialConstants.ROOT_CREDENTIALS);
+        MongoDbService mongoDbService = mongoDBCustomImplementation.connection(serviceInstance, plan, usernamePasswordCredential);
+
+        UsernamePasswordCredential bindingCredentials = credentialStore.getUser(serviceInstance, binding.getId());
+
+        mongoDbService.mongoClient().getDatabase(binding.getCredentials().get(DATABASE).toString())
+                .runCommand(new BasicDBObject("dropUser", bindingCredentials.getUsername()));
+
+        credentialStore.deleteCredentials(serviceInstance, binding.getId());
+    }
+
+    @Override
+    protected ServiceInstanceBinding bindServiceKey(String bindingId, ServiceInstanceBindingRequest serviceInstanceBindingRequest,
+                                                    ServiceInstance serviceInstance, Plan plan,
+                                                    List<ServerAddress> externalAddresses) {
+
+        Map<String, Object> credentials = createCredentials(bindingId, null, serviceInstance, plan, externalAddresses.get(0));
+
+        ServiceInstanceBinding serviceInstanceBinding = new ServiceInstanceBinding(bindingId, serviceInstance.getId(),
+                credentials, null);
+        serviceInstanceBinding.setExternalServerAddresses(externalAddresses);
+        return serviceInstanceBinding;
+    }
+
+    @Override
+    protected RouteBinding bindRoute(ServiceInstance serviceInstance, String route) {
+        throw new UnsupportedOperationException();
     }
 
 

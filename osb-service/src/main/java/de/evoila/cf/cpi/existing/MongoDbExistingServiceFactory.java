@@ -41,20 +41,6 @@ public class MongoDbExistingServiceFactory extends ExistingServiceFactory {
     }
 
     @Override
-    public void deleteInstance(ServiceInstance serviceInstance, Plan plan) throws PlatformException {
-        credentialStore.deleteCredentials(serviceInstance, serviceInstance.getId());
-
-        MongoDbService mongoDbService = mongoDBCustomImplementation.connection(serviceInstance, plan, null);
-
-        mongoDBCustomImplementation.deleteDatabase(mongoDbService, serviceInstance.getId());
-    }
-
-    @Override
-    public ServiceInstance getInstance(ServiceInstance serviceInstance, Plan plan) {
-        return serviceInstance;
-    }
-
-    @Override
     public ServiceInstance createInstance(ServiceInstance serviceInstance, Plan plan, Map<String, Object> parameters) throws PlatformException {
         UsernamePasswordCredential usernamePasswordCredential = credentialStore.createUser(serviceInstance, CredentialConstants.ROOT_CREDENTIALS);
         serviceInstance.setUsername(usernamePasswordCredential.getUsername());
@@ -63,6 +49,20 @@ public class MongoDbExistingServiceFactory extends ExistingServiceFactory {
 
         mongoDBCustomImplementation.createDatabase(mongoDbService, serviceInstance.getId());
 
+        return serviceInstance;
+    }
+
+    @Override
+    public void deleteInstance(ServiceInstance serviceInstance, Plan plan) throws PlatformException {
+        credentialStore.deleteCredentials(serviceInstance, CredentialConstants.ROOT_CREDENTIALS);
+
+        MongoDbService mongoDbService = mongoDBCustomImplementation.connection(serviceInstance, plan, null);
+
+        mongoDBCustomImplementation.deleteDatabase(mongoDbService, serviceInstance.getId());
+    }
+
+    @Override
+    public ServiceInstance getInstance(ServiceInstance serviceInstance, Plan plan) {
         return serviceInstance;
     }
 
