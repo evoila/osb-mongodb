@@ -29,10 +29,10 @@ import java.util.Map;
 @Service
 public class MongoDbBindingService extends BindingServiceImpl {
 
-	private Logger log = LoggerFactory.getLogger(MongoDbBindingService.class);
+    private Logger log = LoggerFactory.getLogger(MongoDbBindingService.class);
 
     private static String URI = "uri";
-	private static String USERNAME = "user";
+    private static String USERNAME = "user";
     private static String PASSWORD = "password";
     private static String DATABASE = "database";
 
@@ -42,7 +42,7 @@ public class MongoDbBindingService extends BindingServiceImpl {
 
     public MongoDbBindingService(BindingRepository bindingRepository, ServiceDefinitionRepository serviceDefinitionRepository,
                                  ServiceInstanceRepository serviceInstanceRepository, RouteBindingRepository routeBindingRepository,
-                                 HAProxyService haProxyService, MongoDBCustomImplementation mongoDBCustomImplementation,
+                                 @Autowired(required = false) HAProxyService haProxyService, MongoDBCustomImplementation mongoDBCustomImplementation,
                                  JobRepository jobRepository, AsyncBindingService asyncBindingService,
                                  PlatformRepository platformRepository, CredentialStore credentialStore) {
         super(bindingRepository, serviceDefinitionRepository, serviceInstanceRepository, routeBindingRepository,
