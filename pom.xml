@@ -27,7 +27,7 @@
     <properties>
         <resource.dir>${basedir}/../osb-service/src/main/resources</resource.dir>
         <dashboard.module>mongodb</dashboard.module>
-        <spring-cloud.version>Finchley.RELEASE</spring-cloud.version>
+        <spring-cloud.version>Greenwich.SR1</spring-cloud.version>
         <java.version>1.8</java.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
