@@ -29,9 +29,9 @@ import java.util.Map;
  * @author Johannes Hiemer.
  */
 @Service
-public class MongoDbBindingService extends BindingServiceImpl {
+public class MongoDBBindingService extends BindingServiceImpl {
 
-    private Logger log = LoggerFactory.getLogger(MongoDbBindingService.class);
+    private Logger log = LoggerFactory.getLogger(MongoDBBindingService.class);
 
     private static String URI = "uri";
     private static String USERNAME = "user";
@@ -42,7 +42,7 @@ public class MongoDbBindingService extends BindingServiceImpl {
 
     private CredentialStore credentialStore;
 
-    public MongoDbBindingService(BindingRepository bindingRepository, ServiceDefinitionRepository serviceDefinitionRepository,
+    public MongoDBBindingService(BindingRepository bindingRepository, ServiceDefinitionRepository serviceDefinitionRepository,
                                  ServiceInstanceRepository serviceInstanceRepository, RouteBindingRepository routeBindingRepository,
                                  @Autowired(required = false) HAProxyService haProxyService, MongoDBCustomImplementation mongoDBCustomImplementation,
                                  JobRepository jobRepository, AsyncBindingService asyncBindingService,
@@ -58,14 +58,14 @@ public class MongoDbBindingService extends BindingServiceImpl {
                                                     ServiceInstance serviceInstance, Plan plan, ServerAddress host) {
         UsernamePasswordCredential usernamePasswordCredential = credentialStore.getUser(serviceInstance, CredentialConstants.ROOT_CREDENTIALS);
 
-        MongoDbService mongoDbService = mongoDBCustomImplementation.connection(serviceInstance, plan, usernamePasswordCredential);
+        MongoDBService mongoDbService = mongoDBCustomImplementation.connection(serviceInstance, plan, usernamePasswordCredential);
 
         credentialStore.createUser(serviceInstance, bindingId);
         UsernamePasswordCredential bindingCredentials = credentialStore.getUser(serviceInstance, bindingId);
 
         String username = bindingCredentials.getUsername();
         String password = bindingCredentials.getPassword();
-        String database = serviceInstance.getId();
+        String database = MongoDBUtils.dbName(serviceInstance.getId());
 
         MongoDBCustomImplementation.createUserForDatabase(mongoDbService, database, username, password);
 
@@ -100,11 +100,13 @@ public class MongoDbBindingService extends BindingServiceImpl {
     @Override
     protected void unbindService(ServiceInstanceBinding binding, ServiceInstance serviceInstance, Plan plan) {
         UsernamePasswordCredential usernamePasswordCredential = credentialStore.getUser(serviceInstance, CredentialConstants.ROOT_CREDENTIALS);
-        MongoDbService mongoDbService = mongoDBCustomImplementation.connection(serviceInstance, plan, usernamePasswordCredential);
+        MongoDBService mongoDbService = mongoDBCustomImplementation.connection(serviceInstance, plan, usernamePasswordCredential);
 
         UsernamePasswordCredential bindingCredentials = credentialStore.getUser(serviceInstance, binding.getId());
 
-        mongoDbService.mongoClient().getDatabase(binding.getCredentials().get(DATABASE).toString())
+        String database = MongoDBUtils.dbName(serviceInstance.getId());
+
+        mongoDbService.mongoClient().getDatabase(database)
                 .runCommand(new BasicDBObject("dropUser", bindingCredentials.getUsername()));
 
         credentialStore.deleteCredentials(serviceInstance, binding.getId());

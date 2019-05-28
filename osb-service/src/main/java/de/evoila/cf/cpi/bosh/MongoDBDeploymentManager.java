@@ -9,6 +9,7 @@ import de.evoila.cf.cpi.CredentialConstants;
 import de.evoila.cf.cpi.bosh.deployment.DeploymentManager;
 import de.evoila.cf.cpi.bosh.deployment.manifest.Manifest;
 import de.evoila.cf.security.credentials.CredentialStore;
+import de.evoila.cf.security.credentials.DefaultCredentialConstants;
 import de.evoila.cf.security.utils.RandomString;
 import org.springframework.core.env.Environment;
 
@@ -49,12 +50,22 @@ public class MongoDBDeploymentManager extends DeploymentManager {
             HashMap<String, Object> mongodb = (HashMap<String, Object>) manifestProperties.get("mongodb");
             HashMap<String, Object> auth = (HashMap<String, Object>) mongodb.get("auth");
             HashMap<String, Object> replset = (HashMap<String, Object>) auth.get("replica-set");
+            HashMap<String, Object> backupAgent = (HashMap<String, Object>) manifestProperties.get("backup_agent");
 
             if (replset == null)
                 auth.put("replica-set", new HashMap<>());
 
             UsernamePasswordCredential usernamePasswordCredential = credentialStore.createUser(serviceInstance, CredentialConstants.ROOT_CREDENTIALS, "admin");
             serviceInstance.setUsername(usernamePasswordCredential.getUsername());
+
+            usernamePasswordCredential = credentialStore.getUser(serviceInstance, CredentialConstants.ROOT_CREDENTIALS);
+            credentialStore.createUser(serviceInstance, DefaultCredentialConstants.BACKUP_CREDENTIALS,
+                    usernamePasswordCredential.getUsername(), usernamePasswordCredential.getPassword());
+
+            UsernamePasswordCredential backupAgentusernamePasswordCredential = credentialStore.createUser(serviceInstance,
+                    DefaultCredentialConstants.BACKUP_AGENT_CREDENTIALS);
+            backupAgent.put("user", backupAgentusernamePasswordCredential.getUsername());
+            backupAgent.put("password", backupAgentusernamePasswordCredential.getPassword());
 
             mongodb_exporter.put("user", usernamePasswordCredential.getUsername());
             mongodb_exporter.put("password", usernamePasswordCredential.getPassword());
@@ -70,7 +81,7 @@ public class MongoDBDeploymentManager extends DeploymentManager {
             }
 
             replset.put("name", properties.get(REPLICA_SET_NAME));
-            serviceInstance.getParameters().put("replicaSet", (String) properties.get(REPLICA_SET_NAME));
+            serviceInstance.getParameters().put("replicaSet", properties.get(REPLICA_SET_NAME));
 
             if (properties.containsKey(DATA_DIR)) {
                 mongodb.put(DATA_DIR, properties.get(DATA_DIR));

@@ -13,7 +13,7 @@ import java.util.List;
  * @author Johannes Hiemer
  *
  */
-public class MongoDbService {
+public class MongoDBService {
 
 	private MongoClient mongoClient;
 
