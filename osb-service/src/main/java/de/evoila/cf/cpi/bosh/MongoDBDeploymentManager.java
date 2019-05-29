@@ -64,7 +64,7 @@ public class MongoDBDeploymentManager extends DeploymentManager {
 
             UsernamePasswordCredential backupAgentusernamePasswordCredential = credentialStore.createUser(serviceInstance,
                     DefaultCredentialConstants.BACKUP_AGENT_CREDENTIALS);
-            backupAgent.put("user", backupAgentusernamePasswordCredential.getUsername());
+            backupAgent.put("username", backupAgentusernamePasswordCredential.getUsername());
             backupAgent.put("password", backupAgentusernamePasswordCredential.getPassword());
 
             mongodb_exporter.put("user", usernamePasswordCredential.getUsername());

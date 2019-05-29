@@ -41,7 +41,7 @@ instance_groups:
     release: osb-bosh-backup-agent
   properties:
     backup_agent:
-      user: backup
+      username: backup
       password: rulez
       scripts_path: /var/vcap/jobs/mongodb/backup
     mongodb_exporter:
