@@ -6,4 +6,6 @@ package de.evoila.cf.cpi;
 public class CredentialConstants {
 
     public static String ROOT_CREDENTIALS = "root_credentials";
+    public static String BACKUP_CREDENTIALS = "backup_credentials";
+    public static String EXPORTER_CREDENTIALS = "exporter_credentials";
 }
