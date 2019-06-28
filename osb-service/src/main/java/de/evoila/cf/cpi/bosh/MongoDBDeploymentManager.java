@@ -3,17 +3,21 @@ package de.evoila.cf.cpi.bosh;
 import de.evoila.cf.broker.bean.BoshProperties;
 import de.evoila.cf.broker.model.ServiceInstance;
 import de.evoila.cf.broker.model.catalog.plan.Plan;
+import de.evoila.cf.broker.model.credential.PasswordCredential;
 import de.evoila.cf.broker.model.credential.UsernamePasswordCredential;
 import de.evoila.cf.broker.util.MapUtils;
 import de.evoila.cf.cpi.CredentialConstants;
 import de.evoila.cf.cpi.bosh.deployment.DeploymentManager;
+import de.evoila.cf.cpi.bosh.deployment.manifest.InstanceGroup;
 import de.evoila.cf.cpi.bosh.deployment.manifest.Manifest;
+import de.evoila.cf.cpi.bosh.deployment.manifest.instanceGroup.JobV2;
 import de.evoila.cf.security.credentials.CredentialStore;
-import de.evoila.cf.security.credentials.DefaultCredentialConstants;
-import de.evoila.cf.security.utils.RandomString;
+import de.evoila.cf.security.credentials.database.DatabaseCredentialsClient;
 import org.springframework.core.env.Environment;
 
 import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -21,11 +25,12 @@ import java.util.Map;
  */
 public class MongoDBDeploymentManager extends DeploymentManager {
 
-    public static final String DATA_DIR = "datadir";
-
-    public static final String REPLICA_SET_NAME = "replica-set-name";
-
-    public static final String VERSION = "version";
+    private HashMap<String, Object> craeteUser(String username, String password){
+        HashMap<String,Object> user = new HashMap<>();
+        user.put("username", username);
+        user.put("password", password);
+        return user;
+    }
 
     private CredentialStore credentialStore;
 
@@ -45,52 +50,66 @@ public class MongoDBDeploymentManager extends DeploymentManager {
         log.debug("Updating Deployment Manifest, replacing parameters");
 
         if (!isUpdate) {
-            HashMap<String, Object> manifestProperties = (HashMap<String, Object>) manifest.getInstanceGroups().stream().findAny().get().getProperties();
-            HashMap<String, Object> mongodb_exporter = (HashMap<String, Object>) manifestProperties.get("mongodb_exporter");
-            HashMap<String, Object> mongodb = (HashMap<String, Object>) manifestProperties.get("mongodb");
-            HashMap<String, Object> auth = (HashMap<String, Object>) mongodb.get("auth");
-            HashMap<String, Object> replset = (HashMap<String, Object>) auth.get("replica-set");
-            HashMap<String, Object> backupAgent = (HashMap<String, Object>) manifestProperties.get("backup_agent");
 
-            if (replset == null)
-                auth.put("replica-set", new HashMap<>());
+            UsernamePasswordCredential rootCredential = credentialStore.createUser(serviceInstance, CredentialConstants.ROOT_CREDENTIALS, "admin");
+            UsernamePasswordCredential backupCredential = credentialStore.createUser(serviceInstance, CredentialConstants.BACKUP_CREDENTIALS, "backup");
+            UsernamePasswordCredential exporterCredential = credentialStore.createUser(serviceInstance, CredentialConstants.EXPORTER_CREDENTIALS, "exporter");
+            PasswordCredential replicaSetKey = credentialStore.createPassword(serviceInstance,"replicaSetKey", 40);
 
-            UsernamePasswordCredential usernamePasswordCredential = credentialStore.createUser(serviceInstance, CredentialConstants.ROOT_CREDENTIALS, "admin");
-            serviceInstance.setUsername(usernamePasswordCredential.getUsername());
+            InstanceGroup instanceGroup =  manifest.getInstanceGroup("mongodb").get();
 
-            usernamePasswordCredential = credentialStore.getUser(serviceInstance, CredentialConstants.ROOT_CREDENTIALS);
-            credentialStore.createUser(serviceInstance, DefaultCredentialConstants.BACKUP_CREDENTIALS,
-                    usernamePasswordCredential.getUsername(), usernamePasswordCredential.getPassword());
+            if(credentialStore instanceof DatabaseCredentialsClient){
+                JobV2 mongoJob = instanceGroup.getJob("mongodb").get();
+                JobV2 exportJob = instanceGroup.getJob("mongodb_exporter").get();
+                JobV2 backupJob = instanceGroup.getJob("backup-agent").get();
+                Map<String, Object> mongodb_properties = getProperty(mongoJob.getProperties(),"mongodb");
+                Map<String, Object> exporter_properties = getProperty(exportJob.getProperties(), "mongodb_exporter");
+                Map<String, Object> backup_properties = getProperty(backupJob.getProperties(), "backup_agent");
 
-            UsernamePasswordCredential backupAgentusernamePasswordCredential = credentialStore.createUser(serviceInstance,
-                    DefaultCredentialConstants.BACKUP_AGENT_CREDENTIALS);
-            backupAgent.put("username", backupAgentusernamePasswordCredential.getUsername());
-            backupAgent.put("password", backupAgentusernamePasswordCredential.getPassword());
+                if (properties.containsKey("version")){
+                    mongodb_properties.put("version", properties.get("version"));
+                }
 
-            mongodb_exporter.put("user", usernamePasswordCredential.getUsername());
-            mongodb_exporter.put("password", usernamePasswordCredential.getPassword());
-            auth.put("user", usernamePasswordCredential.getUsername());
-            auth.put("password", usernamePasswordCredential.getPassword());
+                if (properties.containsKey("config")){
+                    Map<String, Object> mdbConfig = getProperty(mongodb_properties, "config");
+                    MapUtils.deepMerge(mdbConfig, (Map<String, Object>) properties.get("config"));
+                }
 
-            if (!replset.containsKey("keyfile")) {
-                replset.put("keyfile", new RandomString(1024).nextString());
+                Map<String, Object> auth = getProperty(mongodb_properties, "auth");
+
+                Map<String, Object> replset = getProperty(auth,"replica-set");
+                replset.put("keyfile", replicaSetKey.getPassword());
+                if (properties.containsKey("replica-set-name")){
+                    replset.put("name", properties.get("replica-set-name"));
+                }
+
+                List<HashMap<String, Object>> admins= (List<HashMap<String, Object>>) auth.get("admin_users");
+                if(admins == null){
+                    admins = new LinkedList<>();
+                    auth.put("admin_users",admins);
+                }
+                admins.clear();
+                admins.add(craeteUser(rootCredential.getUsername(),rootCredential.getPassword()));
+                admins.add(craeteUser(exporterCredential.getUsername(),exporterCredential.getPassword()));
+
+                List<HashMap<String, Object>> backup_users= (List<HashMap<String, Object>>) auth.get("backup_users");
+                if(backup_users == null){
+                    backup_users = new LinkedList<>();
+                    auth.put("backup_users",backup_users);
+                }
+                backup_users.clear();
+                backup_users.add(craeteUser(backupCredential.getUsername(),backupCredential.getPassword()));
+
+                exporter_properties.put("user", exporterCredential.getUsername());
+                exporter_properties.put("password", exporterCredential.getPassword());
+                exporter_properties.put("database", "admin");
+
+                backup_properties.put("user", backupCredential.getUsername());
+                backup_properties.put("password", backupCredential.getPassword());
             }
 
-            if (!properties.containsKey(REPLICA_SET_NAME)) {
-                properties.put(REPLICA_SET_NAME, "repSet");
-            }
 
-            replset.put("name", properties.get(REPLICA_SET_NAME));
-            serviceInstance.getParameters().put("replicaSet", properties.get(REPLICA_SET_NAME));
 
-            if (properties.containsKey(DATA_DIR)) {
-                mongodb.put(DATA_DIR, properties.get(DATA_DIR));
-            }
-
-            if (properties.containsKey(VERSION)) {
-                mongodb.put(VERSION, properties.get(VERSION));
-
-            }
         } else if (isUpdate && customParameters != null && !customParameters.isEmpty()) {
             for (Map.Entry parameter : customParameters.entrySet()) {
                 Map<String, Object> manifestProperties = manifestProperties(parameter.getKey().toString(), manifest);
