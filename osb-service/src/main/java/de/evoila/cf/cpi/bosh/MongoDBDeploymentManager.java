@@ -25,12 +25,6 @@ import java.util.Map;
  */
 public class MongoDBDeploymentManager extends DeploymentManager {
 
-    public static final String DATA_DIR = "datadir";
-
-    public static final String REPLICA_SET_NAME = "replica-set-name";
-
-    public static final String VERSION = "version";
-
     private HashMap<String, Object> craeteUser(String username, String password){
         HashMap<String,Object> user = new HashMap<>();
         user.put("username", username);
@@ -72,11 +66,22 @@ public class MongoDBDeploymentManager extends DeploymentManager {
                 Map<String, Object> exporter_properties = getProperty(exportJob.getProperties(), "mongodb_exporter");
                 Map<String, Object> backup_properties = getProperty(backupJob.getProperties(), "backup_agent");
 
+                if (properties.containsKey("version")){
+                    mongodb_properties.put("version", properties.get("version"));
+                }
+
+                if (properties.containsKey("config")){
+                    Map<String, Object> mdbConfig = getProperty(mongodb_properties, "config");
+                    MapUtils.deepMerge(mdbConfig, (Map<String, Object>) properties.get("config"));
+                }
 
                 Map<String, Object> auth = getProperty(mongodb_properties, "auth");
 
                 Map<String, Object> replset = getProperty(auth,"replica-set");
                 replset.put("keyfile", replicaSetKey.getPassword());
+                if (properties.containsKey("replica-set-name")){
+                    replset.put("name", properties.get("replica-set-name"));
+                }
 
                 List<HashMap<String, Object>> admins= (List<HashMap<String, Object>>) auth.get("admin_users");
                 if(admins == null){
