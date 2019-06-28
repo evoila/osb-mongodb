@@ -3,7 +3,8 @@ package de.evoila.cf.broker.backup;
 import com.mongodb.MongoException;
 import com.mongodb.client.ListDatabasesIterable;
 import de.evoila.cf.broker.custom.mongodb.MongoDBCustomImplementation;
-import de.evoila.cf.broker.custom.mongodb.MongoDbService;
+import de.evoila.cf.broker.custom.mongodb.MongoDBService;
+import de.evoila.cf.broker.custom.mongodb.MongoDBUtils;
 import de.evoila.cf.broker.exception.ServiceBrokerException;
 import de.evoila.cf.broker.exception.ServiceDefinitionDoesNotExistException;
 import de.evoila.cf.broker.exception.ServiceInstanceDoesNotExistException;
@@ -60,7 +61,7 @@ public class BackupCustomServiceImpl implements BackupCustomService {
         Map<String, String> result = new HashMap<>();
         if (plan.getPlatform().equals(Platform.BOSH)) {
             UsernamePasswordCredential usernamePasswordCredential = credentialStore.getUser(serviceInstance, CredentialConstants.ROOT_CREDENTIALS);
-            MongoDbService mongoDbService = mongoDBCustomImplementation.connection(serviceInstance, plan, usernamePasswordCredential);
+            MongoDBService mongoDbService = mongoDBCustomImplementation.connection(serviceInstance, plan, usernamePasswordCredential);
 
             try {
                 ListDatabasesIterable<Document> databases = mongoDbService.mongoClient().listDatabases();
@@ -70,6 +71,8 @@ public class BackupCustomServiceImpl implements BackupCustomService {
             } catch (MongoException ex) {
                 new ServiceBrokerException("Could not load databases", ex);
             }
+        } else if (plan.getPlatform().equals(Platform.EXISTING_SERVICE)) {
+            result.put(MongoDBUtils.dbName(serviceInstance.getId()), MongoDBUtils.dbName(serviceInstance.getId()));
         }
 
         return result;

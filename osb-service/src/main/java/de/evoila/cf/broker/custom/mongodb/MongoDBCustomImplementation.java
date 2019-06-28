@@ -30,7 +30,7 @@ public class MongoDBCustomImplementation {
         this.existingEndpointBean = existingEndpointBean;
     }
 
-    public void createDatabase(MongoDbService connection, String database) throws PlatformException {
+    public void createDatabase(MongoDBService connection, String database) throws PlatformException {
         try {
             MongoClient mongoClient = connection.mongoClient();
             MongoDatabase mongoDatabase = mongoClient.getDatabase(database);
@@ -43,7 +43,7 @@ public class MongoDBCustomImplementation {
         }
     }
 
-    public void deleteDatabase(MongoDbService connection, String database) throws PlatformException {
+    public void deleteDatabase(MongoDBService connection, String database) throws PlatformException {
         try {
             connection.mongoClient().dropDatabase(database);
         } catch (MongoException e) {
@@ -51,12 +51,12 @@ public class MongoDBCustomImplementation {
         }
     }
 
-    public static void createUserForDatabase(MongoDbService mongoDbService, String database, String username,
+    public static void createUserForDatabase(MongoDBService mongoDbService, String database, String username,
                                              String password) {
         createUserForDatabaseWithRoles(mongoDbService, database, username, password, "readWrite");
     }
 
-    public static void createUserForDatabaseWithRoles(MongoDbService mongoDbService, String database, String username,
+    public static void createUserForDatabaseWithRoles(MongoDBService mongoDbService, String database, String username,
                                                       String password, String... roles) {
         Map<String, Object> commandArguments = new BasicDBObject();
         commandArguments.put("createUser", username);
@@ -67,8 +67,8 @@ public class MongoDBCustomImplementation {
         mongoDbService.mongoClient().getDatabase(database).runCommand(command);
     }
 
-    public MongoDbService connection(ServiceInstance serviceInstance, Plan plan, UsernamePasswordCredential usernamePasswordCredential) {
-        MongoDbService mongoDbService = new MongoDbService();
+    public MongoDBService connection(ServiceInstance serviceInstance, Plan plan, UsernamePasswordCredential usernamePasswordCredential) {
+        MongoDBService mongoDbService = new MongoDBService();
 
         if(plan.getPlatform() == Platform.BOSH)
             mongoDbService.createConnection(usernamePasswordCredential.getUsername(), usernamePasswordCredential.getPassword(),

@@ -46,7 +46,7 @@ public class MongoDBBoshPlatformService extends BoshPlatformService {
         List<Vm> vms = super.getVms(serviceInstance);
         serviceInstance.getHosts().clear();
 
-        vms.forEach(vm -> serviceInstance.getHosts().add(super.toServerAddress(vm, defaultPort)));
+        vms.forEach(vm -> serviceInstance.getHosts().add(super.toServerAddress(vm, defaultPort, plan)));
     }
 
     @Override

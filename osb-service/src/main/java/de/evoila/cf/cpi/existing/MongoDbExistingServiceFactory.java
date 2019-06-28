@@ -2,7 +2,8 @@ package de.evoila.cf.cpi.existing;
 
 import de.evoila.cf.broker.bean.ExistingEndpointBean;
 import de.evoila.cf.broker.custom.mongodb.MongoDBCustomImplementation;
-import de.evoila.cf.broker.custom.mongodb.MongoDbService;
+import de.evoila.cf.broker.custom.mongodb.MongoDBService;
+import de.evoila.cf.broker.custom.mongodb.MongoDBUtils;
 import de.evoila.cf.broker.exception.PlatformException;
 import de.evoila.cf.broker.model.ServiceInstance;
 import de.evoila.cf.broker.model.catalog.plan.Plan;
@@ -11,6 +12,7 @@ import de.evoila.cf.broker.repository.PlatformRepository;
 import de.evoila.cf.broker.service.availability.ServicePortAvailabilityVerifier;
 import de.evoila.cf.cpi.CredentialConstants;
 import de.evoila.cf.security.credentials.CredentialStore;
+import de.evoila.cf.security.credentials.DefaultCredentialConstants;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.stereotype.Service;
 
@@ -42,23 +44,34 @@ public class MongoDbExistingServiceFactory extends ExistingServiceFactory {
 
     @Override
     public ServiceInstance createInstance(ServiceInstance serviceInstance, Plan plan, Map<String, Object> parameters) throws PlatformException {
-        UsernamePasswordCredential usernamePasswordCredential = credentialStore.createUser(serviceInstance, CredentialConstants.ROOT_CREDENTIALS);
-        serviceInstance.setUsername(usernamePasswordCredential.getUsername());
+        if (existingEndpointBean.getBackupCredentials() != null)
+            credentialStore.createUser(serviceInstance, DefaultCredentialConstants.BACKUP_AGENT_CREDENTIALS,
+                    existingEndpointBean.getBackupCredentials().getUsername(), existingEndpointBean.getBackupCredentials().getPassword());
 
-        MongoDbService mongoDbService = mongoDBCustomImplementation.connection(serviceInstance, plan, null);
+        credentialStore.createUser(serviceInstance, CredentialConstants.ROOT_CREDENTIALS);
+        UsernamePasswordCredential serviceInstanceUsernamePasswordCredential = credentialStore.getUser(serviceInstance, CredentialConstants.ROOT_CREDENTIALS);
 
-        mongoDBCustomImplementation.createDatabase(mongoDbService, serviceInstance.getId());
+        credentialStore.createUser(serviceInstance, DefaultCredentialConstants.BACKUP_CREDENTIALS, serviceInstanceUsernamePasswordCredential.getUsername(),
+                serviceInstanceUsernamePasswordCredential.getPassword());
+
+        serviceInstance.setUsername(serviceInstanceUsernamePasswordCredential.getUsername());
+
+        MongoDBService mongoDbService = mongoDBCustomImplementation.connection(serviceInstance, plan, null);
+
+        mongoDBCustomImplementation.createDatabase(mongoDbService, MongoDBUtils.dbName(serviceInstance.getId()));
 
         return serviceInstance;
     }
 
     @Override
     public void deleteInstance(ServiceInstance serviceInstance, Plan plan) throws PlatformException {
+        MongoDBService mongoDbService = mongoDBCustomImplementation.connection(serviceInstance, plan, null);
+
+        mongoDBCustomImplementation.deleteDatabase(mongoDbService, MongoDBUtils.dbName(serviceInstance.getId()));
+
         credentialStore.deleteCredentials(serviceInstance, CredentialConstants.ROOT_CREDENTIALS);
-
-        MongoDbService mongoDbService = mongoDBCustomImplementation.connection(serviceInstance, plan, null);
-
-        mongoDBCustomImplementation.deleteDatabase(mongoDbService, serviceInstance.getId());
+        credentialStore.deleteCredentials(serviceInstance, DefaultCredentialConstants.BACKUP_AGENT_CREDENTIALS);
+        credentialStore.deleteCredentials(serviceInstance, DefaultCredentialConstants.BACKUP_CREDENTIALS);
     }
 
     @Override
