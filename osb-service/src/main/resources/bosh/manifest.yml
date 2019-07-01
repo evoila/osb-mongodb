@@ -54,7 +54,7 @@ instance_groups:
     release: osb-bosh-monitoring
     properties:
       mongodb_exporter:
-        user: ((exporter_credentials.username))
+        username: ((exporter_credentials.username))
         password: ((exporter_credentials.password))
         database: admin
   - name: backup-agent

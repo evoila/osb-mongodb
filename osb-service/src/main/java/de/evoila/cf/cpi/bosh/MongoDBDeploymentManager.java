@@ -104,7 +104,7 @@ public class MongoDBDeploymentManager extends DeploymentManager {
                 exporter_properties.put("password", exporterCredential.getPassword());
                 exporter_properties.put("database", "admin");
 
-                backup_properties.put("user", backupCredential.getUsername());
+                backup_properties.put("username", backupCredential.getUsername());
                 backup_properties.put("password", backupCredential.getPassword());
             }
 
