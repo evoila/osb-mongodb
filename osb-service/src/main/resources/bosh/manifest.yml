@@ -54,14 +54,14 @@ instance_groups:
     release: osb-bosh-monitoring
     properties:
       mongodb_exporter:
-        username: ((exporter_credentials.username))
+        user: ((exporter_credentials.username))
         password: ((exporter_credentials.password))
         database: admin
   - name: backup-agent
     release: osb-bosh-backup-agent
     properties:
       backup_agent:
-        user: ((backup_credentials.username))
+        username: ((backup_credentials.username))
         password: ((backup_credentials.password))
         scripts_path: /var/vcap/jobs/mongodb/backup
 
