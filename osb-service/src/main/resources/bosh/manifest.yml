@@ -3,45 +3,65 @@ name: osb-bosh-mongodb
 
 releases:
 - name: osb-bosh-mongodb
-  version: latest
+  version:  latest
 - name: osb-bosh-monitoring
   version: latest
+- name: osb-bosh-backup-agent
+  version: latest
+
 update:
   canaries: 1
   canary_watch_time: 15000-30000
   update_watch_time: 15000-30000
-  max_in_flight: 2
+  max_in_flight: 1
 
 stemcells:
 - alias: default
-  os: ubuntu-trusty
+  os: ubuntu-xenial
   version: latest
 
 instance_groups:
 - name: mongodb
-  instances: 1
-  vm_type: small
-  stemcell: default
-  persistent_disk_type: 10GB
+  instances: 3
   azs:
   - z1
   networks:
   - name: service
+  vm_type: small
+  stemcell: default
+  persistent_disk_type: 10GB
   jobs:
   - name: mongodb
     release: osb-bosh-mongodb
+    properties:
+      mongodb:
+        version: 4
+        auth:
+          admin_users:
+          - username: ((root_credentials.username))
+            password: ((root_credentials.password))
+          - username: ((exporter_credentials.username))
+            password: ((exporter_credentials.password))
+          backup_users:
+          - username: ((backup_credentials.username))
+            password: ((backup_credentials.password))
+          replica-set:
+            keyfile: ((replicaSetKey))
+        datadir: /var/vcap/store/mongodb3/
   - name: node_exporter
     release: osb-bosh-monitoring
   - name: mongodb_exporter
     release: osb-bosh-monitoring
-  properties:
-    mongodb:
-      version: 4
-      auth:
-        user: admin
-        replica-set:
-          keyfile: xav8/zX2tZlh8H8Fyuf3caLnYP0j9qzBzvgqs7voXK2ilVjHRfddKH2m6SfDV4JrmFhEjaOm1rEBrYxn5iyJMrqU2pvo30im3fTBNbtl9v14dGHN1wjzNS++Eh5S6zOip/ZRMtIm2d9A9MxQItVfjHukpFle8+7KpxHKIT99OyfPv0kmRkphW2bjOcbwPFrShrTlH8fCrCtseUdQyY1l4CnCvLxoRGgR3eDxRlZCA+ynNAqWWubx4jKv4m2CIV3HtZbdgsEd1xPg9XCEZq56224dnnAoOzxt+M5FkxfyyNCV6hEt+jJjL4SR5UFRDzxWypFa1E36a3K38yvOANwetAlxC68bR/v4vr5CDfkLUTPwRR2o1aekhIkt5aOmUFfujeDmRS+QxC0O19FTRTw1GWqoWQo01U+lFFYt5OtYe+KJHVS4JFsE8jJ1tYK8tPSwF9osdoCaJ28Ssy+kontt+tZAlbSLSZK/6HiHA8Oo95haAx1unGCWW1TTbiKkcCAmfkReyPgkzwpJW3/53o1h7g3jSohWqDalqWzCiLkeyFBGvgbLA/z32dS+/sBmJhPtf8EuaZyT7dALYzt8rflsj7uiq6khat0To+VVwemE7Vzk5srY1XdU5P0TtK1kaRib0wbPq1Aob46xkKAZBkD9iEbMLcBZTPn01gUErPHoRyjR+9Z08aofKCka5wSUpXcUgTQ+iu+tgfVvcgaunwWr/lCiFQUEP3aFWT+s5hWJwBkdB7JltpPVCKu9Pj3vqZjGX6r2Y/JihsPrCj1ysFvWm2XxQgLguU3RwD9JgQ2ax17KlZWAoQNJw1yoeRNBCqnwim1HDBIz6LyJqbI8qUC7RuRyiQV5Psg5ac1/FEJEkUYLcCPgffkwSHipfdJtEoRa/KTlow6dBwbdPpkz+HOWOI/rcT6LCSq0ByEUYyAB850f398E+E4peB/TVFDdT4y0872GUmUoisZ41bC6nlYdSnb9NVrz
-      datadir: /var/vcap/store/mongodb/
-    mongodb_exporter:
-      user: admin
-      database: admin
+    properties:
+      mongodb_exporter:
+        user: ((exporter_credentials.username))
+        password: ((exporter_credentials.password))
+        database: admin
+  - name: backup-agent
+    release: osb-bosh-backup-agent
+    properties:
+      backup_agent:
+        username: ((backup_credentials.username))
+        password: ((backup_credentials.password))
+        scripts_path: /var/vcap/jobs/mongodb/backup
+

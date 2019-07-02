@@ -13,7 +13,7 @@ import java.util.List;
  * @author Johannes Hiemer
  *
  */
-public class MongoDbService {
+public class MongoDBService {
 
 	private MongoClient mongoClient;
 
@@ -25,12 +25,12 @@ public class MongoDbService {
         return mongoClient;
     }
 
-	public void createConnection(String username, String password, String database, List<de.evoila.cf.broker.model.ServerAddress> hosts) {
+	public void createConnection(String username, String password, String database, List<de.evoila.cf.broker.model.catalog.ServerAddress> hosts) {
 		if(database == null)
 			database = "admin";
 		
 		List<ServerAddress> serverAddresses = new ArrayList<>();
-		for (de.evoila.cf.broker.model.ServerAddress host : hosts) {
+		for (de.evoila.cf.broker.model.catalog.ServerAddress host : hosts) {
 			serverAddresses.add(new ServerAddress(host.getIp(), host.getPort()));
 		}
 
