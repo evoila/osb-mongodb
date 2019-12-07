@@ -53,7 +53,7 @@ instance_groups:
     properties:
       mongodb_exporter:
         mongodb:
-          uri: mongodb://((exporter_credential.username)):((exporter_credential.password))@127.0.0.1:27017/admin
+          uri: mongodb://((exporter_credentials.username)):((exporter_credentials.password))@127.0.0.1:27017/admin
   - name: backup-agent
     release: osb-bosh-backup-agent
     properties:
