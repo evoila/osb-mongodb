@@ -4,7 +4,7 @@ name: osb-bosh-mongodb
 releases:
 - name: osb-bosh-mongodb
   version:  latest
-- name: osb-bosh-monitoring
+- name: prometheus
   version: latest
 - name: osb-bosh-backup-agent
   version: latest
@@ -48,15 +48,12 @@ instance_groups:
           replica-set:
             keyfile: ((replicaSetKey))
         datadir: /var/vcap/store/mongodb3/
-  - name: node_exporter
-    release: osb-bosh-monitoring
   - name: mongodb_exporter
-    release: osb-bosh-monitoring
+    release: prometheus
     properties:
       mongodb_exporter:
-        user: ((exporter_credentials.username))
-        password: ((exporter_credentials.password))
-        database: admin
+        mongodb:
+          uri: mongodb://((exporter_credential.username)):((exporter_credential.password))@127.0.0.1:27017/admin
   - name: backup-agent
     release: osb-bosh-backup-agent
     properties:

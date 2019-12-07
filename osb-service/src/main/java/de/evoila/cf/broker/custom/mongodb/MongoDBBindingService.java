@@ -10,14 +10,12 @@ import de.evoila.cf.broker.model.catalog.plan.Plan;
 import de.evoila.cf.broker.model.credential.UsernamePasswordCredential;
 import de.evoila.cf.broker.repository.*;
 import de.evoila.cf.broker.service.AsyncBindingService;
-import de.evoila.cf.broker.service.HAProxyService;
 import de.evoila.cf.broker.service.impl.BindingServiceImpl;
 import de.evoila.cf.broker.util.ServiceInstanceUtils;
 import de.evoila.cf.cpi.CredentialConstants;
 import de.evoila.cf.security.credentials.CredentialStore;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 
@@ -44,11 +42,11 @@ public class MongoDBBindingService extends BindingServiceImpl {
 
     public MongoDBBindingService(BindingRepository bindingRepository, ServiceDefinitionRepository serviceDefinitionRepository,
                                  ServiceInstanceRepository serviceInstanceRepository, RouteBindingRepository routeBindingRepository,
-                                 @Autowired(required = false) HAProxyService haProxyService, MongoDBCustomImplementation mongoDBCustomImplementation,
+                                 MongoDBCustomImplementation mongoDBCustomImplementation,
                                  JobRepository jobRepository, AsyncBindingService asyncBindingService,
                                  PlatformRepository platformRepository, CredentialStore credentialStore) {
         super(bindingRepository, serviceDefinitionRepository, serviceInstanceRepository, routeBindingRepository,
-                haProxyService, jobRepository, asyncBindingService, platformRepository);
+                jobRepository, asyncBindingService, platformRepository);
         this.credentialStore = credentialStore;
         this.mongoDBCustomImplementation = mongoDBCustomImplementation;
     }
@@ -112,18 +110,6 @@ public class MongoDBBindingService extends BindingServiceImpl {
         credentialStore.deleteCredentials(serviceInstance, binding.getId());
     }
 
-    @Override
-    protected ServiceInstanceBinding bindServiceKey(String bindingId, ServiceInstanceBindingRequest serviceInstanceBindingRequest,
-                                                    ServiceInstance serviceInstance, Plan plan,
-                                                    List<ServerAddress> externalAddresses) {
-
-        Map<String, Object> credentials = createCredentials(bindingId, null, serviceInstance, plan, externalAddresses.get(0));
-
-        ServiceInstanceBinding serviceInstanceBinding = new ServiceInstanceBinding(bindingId, serviceInstance.getId(),
-                credentials, null);
-        serviceInstanceBinding.setExternalServerAddresses(externalAddresses);
-        return serviceInstanceBinding;
-    }
 
     @Override
     protected RouteBinding bindRoute(ServiceInstance serviceInstance, String route) {
