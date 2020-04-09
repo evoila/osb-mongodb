@@ -69,8 +69,11 @@ public class MongoDbExistingServiceFactory extends ExistingServiceFactory {
 
         mongoDBCustomImplementation.deleteDatabase(mongoDbService, MongoDBUtils.dbName(serviceInstance.getId()));
 
+        if(existingEndpointBean.getBackupCredentials() != null) {
+            credentialStore.deleteCredentials(serviceInstance, DefaultCredentialConstants.BACKUP_AGENT_CREDENTIALS);
+        }
+
         credentialStore.deleteCredentials(serviceInstance, CredentialConstants.ROOT_CREDENTIALS);
-        credentialStore.deleteCredentials(serviceInstance, DefaultCredentialConstants.BACKUP_AGENT_CREDENTIALS);
         credentialStore.deleteCredentials(serviceInstance, DefaultCredentialConstants.BACKUP_CREDENTIALS);
     }
 
