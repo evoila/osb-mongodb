@@ -101,7 +101,7 @@ public class MongoDBDeploymentManager extends DeploymentManager {
                 backup_users.add(craeteUser(backupCredential.getUsername(),backupCredential.getPassword()));
 
                 Map<String, Object> exporter_properties_mongodb = getProperty(exporter_properties,"mongodb");
-                exporter_properties.put("uri", "mongodb://" + exporterCredential.getUsername() + ":" + exporterCredential.getPassword() + "@127.0.0.1:27017/admin");
+                exporter_properties_mongodb.put("uri", "mongodb://" + exporterCredential.getUsername() + ":" + exporterCredential.getPassword() + "@127.0.0.1:27017/admin");
 
                 backup_properties.put("username", backupCredential.getUsername());
                 backup_properties.put("password", backupCredential.getPassword());
