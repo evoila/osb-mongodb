@@ -45,6 +45,8 @@ instance_groups:
           backup_users:
           - username: ((backup_credentials.username))
             password: ((backup_credentials.password))
+          - username: ((backup_agent_credentials.username))
+            password: ((backup_agent_credentials.password))
           replica-set:
             keyfile: ((replicaSetKey))
         datadir: /var/vcap/store/mongodb3/

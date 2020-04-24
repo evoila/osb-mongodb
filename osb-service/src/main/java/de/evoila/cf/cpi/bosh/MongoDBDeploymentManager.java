@@ -25,7 +25,7 @@ import java.util.Map;
  */
 public class MongoDBDeploymentManager extends DeploymentManager {
 
-    private HashMap<String, Object> craeteUser(String username, String password){
+    private HashMap<String, Object> createUser(String username, String password){
         HashMap<String,Object> user = new HashMap<>();
         user.put("username", username);
         user.put("password", password);
@@ -53,6 +53,7 @@ public class MongoDBDeploymentManager extends DeploymentManager {
 
             UsernamePasswordCredential rootCredential = credentialStore.createUser(serviceInstance, CredentialConstants.ROOT_CREDENTIALS, "admin");
             UsernamePasswordCredential backupCredential = credentialStore.createUser(serviceInstance, CredentialConstants.BACKUP_CREDENTIALS, "backup");
+            UsernamePasswordCredential backupAgentCredential = credentialStore.createUser(serviceInstance, CredentialConstants.BACKUP_AGENT_CREDENTIALS, "backup_agent");
             UsernamePasswordCredential exporterCredential = credentialStore.createUser(serviceInstance, CredentialConstants.EXPORTER_CREDENTIALS, "exporter");
             PasswordCredential replicaSetKey = credentialStore.createPassword(serviceInstance,"replicaSetKey", 40);
 
@@ -89,8 +90,8 @@ public class MongoDBDeploymentManager extends DeploymentManager {
                     auth.put("admin_users",admins);
                 }
                 admins.clear();
-                admins.add(craeteUser(rootCredential.getUsername(),rootCredential.getPassword()));
-                admins.add(craeteUser(exporterCredential.getUsername(),exporterCredential.getPassword()));
+                admins.add(createUser(rootCredential.getUsername(),rootCredential.getPassword()));
+                admins.add(createUser(exporterCredential.getUsername(),exporterCredential.getPassword()));
 
                 List<HashMap<String, Object>> backup_users= (List<HashMap<String, Object>>) auth.get("backup_users");
                 if(backup_users == null){
@@ -98,13 +99,14 @@ public class MongoDBDeploymentManager extends DeploymentManager {
                     auth.put("backup_users",backup_users);
                 }
                 backup_users.clear();
-                backup_users.add(craeteUser(backupCredential.getUsername(),backupCredential.getPassword()));
+                backup_users.add(createUser(backupCredential.getUsername(),backupCredential.getPassword()));
+                backup_users.add(createUser(backupAgentCredential.getUsername(),backupAgentCredential.getPassword()));
 
                 Map<String, Object> exporter_properties_mongodb = getProperty(exporter_properties,"mongodb");
                 exporter_properties_mongodb.put("uri", "mongodb://" + exporterCredential.getUsername() + ":" + exporterCredential.getPassword() + "@127.0.0.1:27017/admin");
 
-                backup_properties.put("username", backupCredential.getUsername());
-                backup_properties.put("password", backupCredential.getPassword());
+                backup_properties.put("username", backupAgentCredential.getUsername());
+                backup_properties.put("password", backupAgentCredential.getPassword());
             }
 
 
