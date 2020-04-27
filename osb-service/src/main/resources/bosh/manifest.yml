@@ -58,7 +58,7 @@ instance_groups:
     release: osb-bosh-backup-agent
     properties:
       backup_agent:
-        username: ((backup_credentials.username))
-        password: ((backup_credentials.password))
+        username: ((backup_agent_credentials.username))
+        password: ((backup_agent_credentials.password))
         scripts_path: /var/vcap/jobs/mongodb/backup
 

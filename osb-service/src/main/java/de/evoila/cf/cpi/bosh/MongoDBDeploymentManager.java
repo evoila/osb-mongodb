@@ -52,7 +52,8 @@ public class MongoDBDeploymentManager extends DeploymentManager {
         if (!isUpdate) {
 
             UsernamePasswordCredential rootCredential = credentialStore.createUser(serviceInstance, CredentialConstants.ROOT_CREDENTIALS, "admin");
-            UsernamePasswordCredential backupCredential = credentialStore.createUser(serviceInstance, CredentialConstants.BACKUP_AGENT_CREDENTIALS, "backup");
+            UsernamePasswordCredential backupCredential = credentialStore.createUser(serviceInstance, CredentialConstants.BACKUP_CREDENTIALS, "backup");
+            UsernamePasswordCredential backupAgentCredential = credentialStore.createUser(serviceInstance, CredentialConstants.BACKUP_AGENT_CREDENTIALS, "backup_agent");
             UsernamePasswordCredential exporterCredential = credentialStore.createUser(serviceInstance, CredentialConstants.EXPORTER_CREDENTIALS, "exporter");
             PasswordCredential replicaSetKey = credentialStore.createPassword(serviceInstance,"replicaSetKey", 40);
 
@@ -103,12 +104,9 @@ public class MongoDBDeploymentManager extends DeploymentManager {
                 Map<String, Object> exporter_properties_mongodb = getProperty(exporter_properties,"mongodb");
                 exporter_properties_mongodb.put("uri", "mongodb://" + exporterCredential.getUsername() + ":" + exporterCredential.getPassword() + "@127.0.0.1:27017/admin");
 
-                backup_properties.put("username", backupCredential.getUsername());
-                backup_properties.put("password", backupCredential.getPassword());
+                backup_properties.put("username", backupAgentCredential.getUsername());
+                backup_properties.put("password", backupAgentCredential.getPassword());
             }
-
-
-
         } else if (isUpdate && customParameters != null && !customParameters.isEmpty()) {
             for (Map.Entry parameter : customParameters.entrySet()) {
                 Map<String, Object> manifestProperties = manifestProperties(parameter.getKey().toString(), manifest);
