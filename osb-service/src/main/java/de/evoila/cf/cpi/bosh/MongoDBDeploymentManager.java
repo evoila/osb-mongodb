@@ -25,7 +25,7 @@ import java.util.Map;
  */
 public class MongoDBDeploymentManager extends DeploymentManager {
 
-    private HashMap<String, Object> craeteUser(String username, String password){
+    private HashMap<String, Object> createUser(String username, String password){
         HashMap<String,Object> user = new HashMap<>();
         user.put("username", username);
         user.put("password", password);
@@ -52,7 +52,7 @@ public class MongoDBDeploymentManager extends DeploymentManager {
         if (!isUpdate) {
 
             UsernamePasswordCredential rootCredential = credentialStore.createUser(serviceInstance, CredentialConstants.ROOT_CREDENTIALS, "admin");
-            UsernamePasswordCredential backupCredential = credentialStore.createUser(serviceInstance, CredentialConstants.BACKUP_CREDENTIALS, "backup");
+            UsernamePasswordCredential backupCredential = credentialStore.createUser(serviceInstance, CredentialConstants.BACKUP_AGENT_CREDENTIALS, "backup");
             UsernamePasswordCredential exporterCredential = credentialStore.createUser(serviceInstance, CredentialConstants.EXPORTER_CREDENTIALS, "exporter");
             PasswordCredential replicaSetKey = credentialStore.createPassword(serviceInstance,"replicaSetKey", 40);
 
@@ -61,7 +61,7 @@ public class MongoDBDeploymentManager extends DeploymentManager {
             if(credentialStore instanceof DatabaseCredentialsClient){
                 JobV2 mongoJob = instanceGroup.getJob("mongodb").get();
                 JobV2 exportJob = instanceGroup.getJob("mongodb_exporter").get();
-                JobV2 backupJob = instanceGroup.getJob("backup-agent").get();
+                JobV2 backupJob = instanceGroup.getJob("backup_agent").get();
                 Map<String, Object> mongodb_properties = getProperty(mongoJob.getProperties(),"mongodb");
                 Map<String, Object> exporter_properties = getProperty(exportJob.getProperties(), "mongodb_exporter");
                 Map<String, Object> backup_properties = getProperty(backupJob.getProperties(), "backup_agent");
@@ -89,8 +89,8 @@ public class MongoDBDeploymentManager extends DeploymentManager {
                     auth.put("admin_users",admins);
                 }
                 admins.clear();
-                admins.add(craeteUser(rootCredential.getUsername(),rootCredential.getPassword()));
-                admins.add(craeteUser(exporterCredential.getUsername(),exporterCredential.getPassword()));
+                admins.add(createUser(rootCredential.getUsername(),rootCredential.getPassword()));
+                admins.add(createUser(exporterCredential.getUsername(),exporterCredential.getPassword()));
 
                 List<HashMap<String, Object>> backup_users= (List<HashMap<String, Object>>) auth.get("backup_users");
                 if(backup_users == null){
@@ -98,7 +98,7 @@ public class MongoDBDeploymentManager extends DeploymentManager {
                     auth.put("backup_users",backup_users);
                 }
                 backup_users.clear();
-                backup_users.add(craeteUser(backupCredential.getUsername(),backupCredential.getPassword()));
+                backup_users.add(createUser(backupCredential.getUsername(),backupCredential.getPassword()));
 
                 Map<String, Object> exporter_properties_mongodb = getProperty(exporter_properties,"mongodb");
                 exporter_properties_mongodb.put("uri", "mongodb://" + exporterCredential.getUsername() + ":" + exporterCredential.getPassword() + "@127.0.0.1:27017/admin");
