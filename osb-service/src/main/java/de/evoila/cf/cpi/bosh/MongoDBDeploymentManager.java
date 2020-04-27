@@ -61,7 +61,7 @@ public class MongoDBDeploymentManager extends DeploymentManager {
             if(credentialStore instanceof DatabaseCredentialsClient){
                 JobV2 mongoJob = instanceGroup.getJob("mongodb").get();
                 JobV2 exportJob = instanceGroup.getJob("mongodb_exporter").get();
-                JobV2 backupJob = instanceGroup.getJob("backup_agent").get();
+                JobV2 backupJob = instanceGroup.getJob("backup-agent").get();
                 Map<String, Object> mongodb_properties = getProperty(mongoJob.getProperties(),"mongodb");
                 Map<String, Object> exporter_properties = getProperty(exportJob.getProperties(), "mongodb_exporter");
                 Map<String, Object> backup_properties = getProperty(backupJob.getProperties(), "backup_agent");
