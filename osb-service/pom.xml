@@ -26,6 +26,7 @@
         <dependency>
             <groupId>org.mongodb</groupId>
             <artifactId>mongo-java-driver</artifactId>
+	    <version>3.12.7</version>
         </dependency>
         <!-- Actuator -->
         <dependency>
@@ -38,11 +39,6 @@
             <groupId>de.evoila.cf.broker</groupId>
             <artifactId>core</artifactId>
             <version>${core.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>de.evoila.cf.broker</groupId>
-            <artifactId>openstack</artifactId>
-            <version>${deployment.version}</version>
         </dependency>
         <dependency>
             <groupId>de.evoila.cf.broker</groupId>
