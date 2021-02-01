@@ -7,6 +7,7 @@ import de.evoila.cf.broker.custom.mongodb.MongoDBService;
 import de.evoila.cf.broker.custom.mongodb.MongoDBUtils;
 import de.evoila.cf.broker.exception.ServiceBrokerException;
 import de.evoila.cf.broker.exception.ServiceDefinitionDoesNotExistException;
+import de.evoila.cf.broker.exception.ServiceDefinitionPlanDoesNotExistException;
 import de.evoila.cf.broker.exception.ServiceInstanceDoesNotExistException;
 import de.evoila.cf.broker.model.Platform;
 import de.evoila.cf.broker.model.ServiceInstance;
@@ -49,14 +50,14 @@ public class BackupCustomServiceImpl implements BackupCustomService {
 
     @Override
     public Map<String, String> getItems(String serviceInstanceId) throws ServiceInstanceDoesNotExistException,
-            ServiceDefinitionDoesNotExistException {
+            ServiceDefinitionDoesNotExistException, ServiceDefinitionPlanDoesNotExistException {
         ServiceInstance serviceInstance = serviceInstanceRepository.getServiceInstance(serviceInstanceId);
 
         if(serviceInstance == null || serviceInstance.getHosts().size() <= 0) {
             throw new ServiceInstanceDoesNotExistException(serviceInstanceId);
         }
 
-        Plan plan = serviceDefinitionRepository.getPlan(serviceInstance.getPlanId());
+        Plan plan = serviceDefinitionRepository.getPlan(serviceInstance.getId(),serviceInstance.getPlanId());
 
         Map<String, String> result = new HashMap<>();
         if (plan.getPlatform().equals(Platform.BOSH)) {
