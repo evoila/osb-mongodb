@@ -84,11 +84,7 @@
                 <plugin>
                     <groupId>org.springframework.boot</groupId>
                     <artifactId>spring-boot-maven-plugin</artifactId>
-<<<<<<< HEAD
                     <version>2.3.5.RELEASE</version>
-=======
-                    <version>2.4.2</version>
->>>>>>> update-dependencies
                     <executions>
                         <execution>
                             <goals>
