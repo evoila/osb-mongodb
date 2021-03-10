@@ -66,6 +66,7 @@ public class MongoDBBindingService extends BindingServiceImpl {
         String database = MongoDBUtils.dbName(serviceInstance.getId());
 
         MongoDBCustomImplementation.createUserForDatabase(mongoDbService, database, username, password);
+        MongoDBCustomImplementation.close(mongoDbService);
 
         List<ServerAddress> mongodbHosts = serviceInstance.getHosts();
         String ingressInstanceGroup = plan.getMetadata().getIngressInstanceGroup();

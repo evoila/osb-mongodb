@@ -1,6 +1,7 @@
 package de.evoila.cf.broker.custom.mongodb;
 
 import com.mongodb.*;
+import com.mongodb.client.MongoClient;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
 import de.evoila.cf.broker.bean.ExistingEndpointBean;
@@ -12,6 +13,7 @@ import de.evoila.cf.broker.model.credential.UsernamePasswordCredential;
 import org.bson.Document;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
 import org.springframework.stereotype.Service;
 
 import java.util.Map;
@@ -45,7 +47,7 @@ public class MongoDBCustomImplementation {
 
     public void deleteDatabase(MongoDBService connection, String database) throws PlatformException {
         try {
-            connection.mongoClient().dropDatabase(database);
+            connection.mongoClient().getDatabase(database).drop();
         } catch (MongoException e) {
             throw new PlatformException("Could not remove from database", e);
         }
@@ -79,4 +81,9 @@ public class MongoDBCustomImplementation {
 
         return mongoDbService;
     }
+
+    public static void close(MongoDBService mongoDbService){
+        mongoDbService.close();
+    }
+    
 }

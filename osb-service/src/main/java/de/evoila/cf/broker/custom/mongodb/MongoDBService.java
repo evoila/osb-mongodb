@@ -4,6 +4,8 @@
 package de.evoila.cf.broker.custom.mongodb;
 
 import com.mongodb.*;
+import com.mongodb.client.MongoClient;
+import com.mongodb.client.MongoClients;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -18,7 +20,7 @@ public class MongoDBService {
 	private MongoClient mongoClient;
 
 	public boolean isConnected() {
-		return mongoClient != null && mongoClient.getUsedDatabases() != null;
+		return mongoClient != null && mongoClient.listDatabases() != null;
 	}
 
     public MongoClient mongoClient() {
@@ -35,10 +37,15 @@ public class MongoDBService {
 		}
 
 		MongoCredential mongoCredential = MongoCredential.createScramSha1Credential(username, database, password.toCharArray());
-		MongoClientOptions mongoClientOptions = MongoClientOptions
-                .builder()
-                .writeConcern(WriteConcern.JOURNALED).build();
-		mongoClient = new MongoClient(serverAddresses, Arrays.asList(mongoCredential), mongoClientOptions);
+		mongoClient = MongoClients.create(MongoClientSettings.builder()
+				.applyToClusterSettings(builder -> 
+						builder.hosts(serverAddresses))
+				.credential(mongoCredential)
+				.build());
+	}
+	
+	public void close(){
+		mongoClient.close();
 	}
 
 }

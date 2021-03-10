@@ -3,7 +3,7 @@ name: osb-bosh-mongodb
 
 releases:
 - name: osb-bosh-mongodb
-  version:  latest
+  version: latest
 - name: prometheus
   version: latest
 - name: osb-bosh-backup-agent
