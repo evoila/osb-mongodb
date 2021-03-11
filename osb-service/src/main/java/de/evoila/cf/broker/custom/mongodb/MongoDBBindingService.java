@@ -80,12 +80,8 @@ public class MongoDBBindingService extends BindingServiceImpl {
         if (host != null)
             endpoint = host.getIp() + ":" + host.getPort();
 
-        String dbURL = String.format("mongodb://%s:%s@%s/%s", username, password, endpoint, database);
+        String dbURL = String.format("mongodb://%s:%s@%s/%s?replicaSet=%s", username, password, endpoint, database, serviceInstance.getId().replace("-",""));
 
-        String replicaSet = (String) serviceInstance.getParameters().get("replicaSet");
-
-        if (replicaSet != null && !replicaSet.equals(""))
-            dbURL += String.format("?replicaSet=%s", replicaSet);
 
         Map<String, Object> credentials = new HashMap<String, Object>();
         credentials.put(URI, dbURL);

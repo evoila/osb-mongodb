@@ -64,13 +64,29 @@ public class MongoDBDeploymentManager extends DeploymentManager {
         }
         databases.add(MongoDBUtils.dbName(serviceInstance.getId()));
 
+        Map<String, Object> auth = getProperty(mongodb_properties, "auth");
+
+        PasswordCredential replicaSetKey = credentialStore.createPassword(serviceInstance,"replicaSetKey", 40);
+        Map<String, String> replset = (Map<String,String>) auth.get("replica-set");
+        if(replset == null){
+            replset = new HashMap<String, String>();
+            auth.put("replica-set", replset);
+        }
+        replset.put("keyfile", replicaSetKey.getPassword());
+
+        replset = (Map<String,String>) mongodb_properties.get("replica-set");
+        if(replset == null){
+            replset = new HashMap<String, String>();
+            mongodb_properties.put("replica-set", replset);
+        }
+        replset.put("name", serviceInstance.getId().replace("-",""));
+        
         if (!isUpdate) {
 
             UsernamePasswordCredential rootCredential = credentialStore.createUser(serviceInstance, CredentialConstants.ROOT_CREDENTIALS, "admin");
             UsernamePasswordCredential backupCredential = credentialStore.createUser(serviceInstance, CredentialConstants.BACKUP_CREDENTIALS, "backup");
             UsernamePasswordCredential backupAgentCredential = credentialStore.createUser(serviceInstance, CredentialConstants.BACKUP_AGENT_CREDENTIALS, "backup_agent");
             UsernamePasswordCredential exporterCredential = credentialStore.createUser(serviceInstance, CredentialConstants.EXPORTER_CREDENTIALS, "exporter");
-            PasswordCredential replicaSetKey = credentialStore.createPassword(serviceInstance,"replicaSetKey", 40);
 
 
             if(credentialStore instanceof DatabaseCredentialsClient){
@@ -88,13 +104,6 @@ public class MongoDBDeploymentManager extends DeploymentManager {
                     MapUtils.deepMerge(mdbConfig, (Map<String, Object>) properties.get("config"));
                 }
 
-                Map<String, Object> auth = getProperty(mongodb_properties, "auth");
-
-                Map<String, Object> replset = getProperty(auth,"replica-set");
-                replset.put("keyfile", replicaSetKey.getPassword());
-                if (properties.containsKey("replica-set-name")){
-                    replset.put("name", properties.get("replica-set-name"));
-                }
 
                 List<HashMap<String, Object>> admins= (List<HashMap<String, Object>>) auth.get("admin_users");
                 if(admins == null){
