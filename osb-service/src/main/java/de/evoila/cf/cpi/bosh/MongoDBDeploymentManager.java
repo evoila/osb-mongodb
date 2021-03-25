@@ -90,9 +90,7 @@ public class MongoDBDeploymentManager extends DeploymentManager {
 
 
             if(credentialStore instanceof DatabaseCredentialsClient){
-                JobV2 exportJob = instanceGroup.getJob("mongodb_exporter").get();
                 JobV2 backupJob = instanceGroup.getJob("backup-agent").get();
-                Map<String, Object> exporter_properties = getProperty(exportJob.getProperties(), "mongodb_exporter");
                 Map<String, Object> backup_properties = getProperty(backupJob.getProperties(), "backup_agent");
 
                 if (properties.containsKey("version")){
@@ -122,8 +120,11 @@ public class MongoDBDeploymentManager extends DeploymentManager {
                 backup_users.clear();
                 backup_users.add(createUser(backupCredential.getUsername(),backupCredential.getPassword()));
 
-                Map<String, Object> exporter_properties_mongodb = getProperty(exporter_properties,"mongodb");
-                exporter_properties_mongodb.put("uri", "mongodb://" + exporterCredential.getUsername() + ":" + exporterCredential.getPassword() + "@127.0.0.1:27017/admin");
+                // disable mongodb exporter https://github.com/bosh-prometheus/prometheus-boshrelease/issues/413 also in bosh.yml
+                // JobV2 exportJob = instanceGroup.getJob("mongodb_exporter").get();
+                // Map<String, Object> exporter_properties = getProperty(exportJob.getProperties(), "mongodb_exporter");
+                // Map<String, Object> exporter_properties_mongodb = getProperty(exporter_properties,"mongodb");
+                // exporter_properties_mongodb.put("uri", "mongodb://" + exporterCredential.getUsername() + ":" + exporterCredential.getPassword() + "@127.0.0.1:27017/admin");
 
                 backup_properties.put("username", backupAgentCredential.getUsername());
                 backup_properties.put("password", backupAgentCredential.getPassword());
