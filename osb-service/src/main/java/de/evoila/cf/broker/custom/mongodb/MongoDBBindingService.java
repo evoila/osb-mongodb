@@ -103,6 +103,7 @@ public class MongoDBBindingService extends BindingServiceImpl {
 
         mongoDbService.mongoClient().getDatabase(database)
                 .runCommand(new BasicDBObject("dropUser", bindingCredentials.getUsername()));
+        mongoDbService.close();
 
         credentialStore.deleteCredentials(serviceInstance, binding.getId());
     }
