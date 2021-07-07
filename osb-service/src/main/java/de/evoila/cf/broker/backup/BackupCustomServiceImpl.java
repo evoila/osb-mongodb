@@ -71,6 +71,8 @@ public class BackupCustomServiceImpl implements BackupCustomService {
                     result.put(database.getString("name"), database.getString("name"));
             } catch (MongoException ex) {
                 new ServiceBrokerException("Could not load databases", ex);
+            } finally {
+                mongoDbService.close();
             }
         } else if (plan.getPlatform().equals(Platform.EXISTING_SERVICE)) {
             result.put(MongoDBUtils.dbName(serviceInstance.getId()), MongoDBUtils.dbName(serviceInstance.getId()));

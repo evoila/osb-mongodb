@@ -59,6 +59,7 @@ public class MongoDbExistingServiceFactory extends ExistingServiceFactory {
         MongoDBService mongoDbService = mongoDBCustomImplementation.connection(serviceInstance, plan, null);
 
         mongoDBCustomImplementation.createDatabase(mongoDbService, MongoDBUtils.dbName(serviceInstance.getId()));
+        mongoDbService.close();
 
         return serviceInstance;
     }
@@ -68,6 +69,7 @@ public class MongoDbExistingServiceFactory extends ExistingServiceFactory {
         MongoDBService mongoDbService = mongoDBCustomImplementation.connection(serviceInstance, plan, null);
 
         mongoDBCustomImplementation.deleteDatabase(mongoDbService, MongoDBUtils.dbName(serviceInstance.getId()));
+        mongoDbService.close();
 
         if(existingEndpointBean.getBackupCredentials() != null) {
             credentialStore.deleteCredentials(serviceInstance, DefaultCredentialConstants.BACKUP_AGENT_CREDENTIALS);
