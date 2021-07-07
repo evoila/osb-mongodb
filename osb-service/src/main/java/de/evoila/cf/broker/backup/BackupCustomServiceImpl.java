@@ -50,7 +50,7 @@ public class BackupCustomServiceImpl implements BackupCustomService {
 
     @Override
     public Map<String, String> getItems(String serviceInstanceId) throws ServiceInstanceDoesNotExistException,
-            ServiceDefinitionDoesNotExistException, ServiceDefinitionPlanDoesNotExistException {
+            ServiceDefinitionDoesNotExistException, ServiceDefinitionPlanDoesNotExistException, ServiceBrokerException {
         ServiceInstance serviceInstance = serviceInstanceRepository.getServiceInstance(serviceInstanceId);
 
         if(serviceInstance == null || serviceInstance.getHosts().size() <= 0) {
@@ -70,7 +70,7 @@ public class BackupCustomServiceImpl implements BackupCustomService {
                 for (Document database : databases)
                     result.put(database.getString("name"), database.getString("name"));
             } catch (MongoException ex) {
-                new ServiceBrokerException("Could not load databases", ex);
+                throw new ServiceBrokerException("Could not load databases", ex);
             } finally {
                 mongoDbService.close();
             }
