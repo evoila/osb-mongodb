@@ -1,6 +1,5 @@
 package de.evoila.cf.cpi.bosh;
 
-import ch.qos.logback.core.db.dialect.DBUtil;
 import de.evoila.cf.broker.bean.BoshProperties;
 import de.evoila.cf.broker.custom.mongodb.MongoDBUtils;
 import de.evoila.cf.broker.model.ServiceInstance;
