@@ -2,6 +2,7 @@ package de.evoila.cf.broker.backup;
 
 import com.mongodb.MongoException;
 import com.mongodb.client.ListDatabasesIterable;
+import de.evoila.cf.broker.controller.custom.CustomBackupController;
 import de.evoila.cf.broker.custom.mongodb.MongoDBCustomImplementation;
 import de.evoila.cf.broker.custom.mongodb.MongoDBService;
 import de.evoila.cf.broker.custom.mongodb.MongoDBUtils;
@@ -19,6 +20,8 @@ import de.evoila.cf.broker.service.BackupCustomService;
 import de.evoila.cf.cpi.CredentialConstants;
 import de.evoila.cf.security.credentials.CredentialStore;
 import org.bson.Document;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import java.util.HashMap;
@@ -37,6 +40,8 @@ public class BackupCustomServiceImpl implements BackupCustomService {
     private ServiceDefinitionRepository serviceDefinitionRepository;
 
     private CredentialStore credentialStore;
+
+    Logger log = LoggerFactory.getLogger(BackupCustomServiceImpl.class);
 
     public BackupCustomServiceImpl(ServiceInstanceRepository serviceInstanceRepository,
                                    MongoDBCustomImplementation mongoDBCustomImplementation,
@@ -66,7 +71,6 @@ public class BackupCustomServiceImpl implements BackupCustomService {
 
             try {
                 ListDatabasesIterable<Document> databases = mongoDbService.mongoClient().listDatabases();
-
                 for (Document database : databases)
                     result.put(database.getString("name"), database.getString("name"));
             } catch (MongoException ex) {
