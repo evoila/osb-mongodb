@@ -47,9 +47,8 @@ public class MongoDBDeploymentManager extends DeploymentManager {
         HashMap<String, Object> properties = new HashMap<>();
         if (customParameters != null && !customParameters.isEmpty())
             properties.putAll(customParameters);
-
         log.debug("Updating Deployment Manifest, replacing parameters");
-
+        setManifestMetadataFromPlan(manifest, plan);
         InstanceGroup instanceGroup =  manifest.getInstanceGroup("mongodb").get();
         JobV2 mongoJob = instanceGroup.getJob("mongodb").get();
         Map<String, Object> mongodb_properties = getProperty(mongoJob.getProperties(),"mongodb");
