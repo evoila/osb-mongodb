@@ -21,18 +21,23 @@
         <persistence.version>1.2.0</persistence.version>
     </properties>
 
-    <dependencies>
-        <!-- MongoDB -->
-        <dependency>
-            <groupId>org.mongodb</groupId>
-            <artifactId>mongodb-driver-legacy</artifactId>
-	    <version>4.2.2</version>
-        </dependency>
-        <!-- Actuator -->
-        <dependency>
-          <groupId>org.springframework.boot</groupId>
-          <artifactId>spring-boot-starter-actuator</artifactId>
-        </dependency>
+  <dependencies>
+    <!-- MongoDB -->
+    <dependency>
+      <groupId>org.mongodb</groupId>
+      <artifactId>mongodb-driver-legacy</artifactId>
+      <version>4.2.2</version>
+    </dependency>
+    <!-- Actuator -->
+    <dependency>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-starter-actuator</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.glassfish.jaxb</groupId>
+      <artifactId>jaxb-runtime</artifactId>
+      <scope>provided</scope>
+    </dependency>
 
         <!-- Cloud Foundry Service Broker -->
         <dependency>
