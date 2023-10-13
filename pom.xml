@@ -40,13 +40,13 @@
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>
-        </dependencies>
 
-        <dependency>
-            <groupId>org.springframework.credhub</groupId>
-            <artifactId>spring-credhub-core</artifactId>
-            <version>3.0.0</version>
-        </dependency>
+            <dependency>
+                <groupId>org.springframework.credhub</groupId>
+                <artifactId>spring-credhub-core</artifactId>
+                <version>3.0.0</version>
+            </dependency>
+        </dependencies>
     </dependencyManagement>
 
     <build>
@@ -68,10 +68,6 @@
                     <configuration>
                         <source>${java.version}</source>
                         <target>${java.version}</target>
-                        <compilerArgs>
-                            <arg>--add-exports</arg>
-                            <arg>java.base/sun.security.util=ALL-UNNAMED</arg>
-                        </compilerArgs>
                     </configuration>
                 </plugin>
                 <plugin>
@@ -89,7 +85,7 @@
                 <plugin>
                     <groupId>org.springframework.boot</groupId>
                     <artifactId>spring-boot-maven-plugin</artifactId>
-                    <version>2.7.0</version>
+                    <version>3.1.2</version>
                     <executions>
                         <execution>
                             <goals>
