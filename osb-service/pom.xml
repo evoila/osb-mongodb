@@ -6,7 +6,7 @@
     <artifactId>osb-mongodb</artifactId>
     <packaging>jar</packaging>
     <name>osb-mongodb</name>
-    <version>1.2.0</version>
+    <version>1.2.1</version>
 
     <parent>
         <groupId>de.evoila.cf.broker</groupId>
@@ -21,18 +21,23 @@
         <persistence.version>1.2.0</persistence.version>
     </properties>
 
-    <dependencies>
-        <!-- MongoDB -->
-        <dependency>
-            <groupId>org.mongodb</groupId>
-            <artifactId>mongodb-driver-legacy</artifactId>
-	    <version>4.2.2</version>
-        </dependency>
-        <!-- Actuator -->
-        <dependency>
-          <groupId>org.springframework.boot</groupId>
-          <artifactId>spring-boot-starter-actuator</artifactId>
-        </dependency>
+  <dependencies>
+    <!-- MongoDB -->
+    <dependency>
+      <groupId>org.mongodb</groupId>
+      <artifactId>mongodb-driver-legacy</artifactId>
+      <version>4.10.2</version>
+    </dependency>
+    <!-- Actuator -->
+    <dependency>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-starter-actuator</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.glassfish.jaxb</groupId>
+      <artifactId>jaxb-runtime</artifactId>
+      <scope>provided</scope>
+    </dependency>
 
         <!-- Cloud Foundry Service Broker -->
         <dependency>
@@ -59,7 +64,7 @@
         <dependency>
             <groupId>com.github.fakemongo</groupId>
             <artifactId>fongo</artifactId>
-            <version>2.1.0</version>
+            <version>2.2.0-RC2</version>
             <scope>test</scope>
         </dependency>
     </dependencies>

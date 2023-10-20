@@ -12,7 +12,7 @@
     <parent>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-parent</artifactId>
-        <version>2.7.0</version>
+        <version>3.1.4</version>
     </parent>
 
     <modules>
@@ -26,20 +26,11 @@
     <properties>
         <resource.dir>${basedir}/../osb-service/src/main/resources</resource.dir>
         <dashboard.module>mongodb</dashboard.module>
-        <spring-cloud.version>2021.0.3</spring-cloud.version>
+        <spring-cloud.version>2022.0.4</spring-cloud.version>
         <java.version>17</java.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
     </properties>
-
-    <dependencies>
-        <dependency>
-            <groupId>junit</groupId>
-            <artifactId>junit</artifactId>
-            <version>4.13.2</version>
-            <scope>test</scope>
-        </dependency>
-    </dependencies>
     <dependencyManagement>
         <dependencies>
             <dependency>
@@ -48,6 +39,12 @@
                 <version>${spring-cloud.version}</version>
                 <type>pom</type>
                 <scope>import</scope>
+            </dependency>
+
+            <dependency>
+                <groupId>org.springframework.credhub</groupId>
+                <artifactId>spring-credhub-core</artifactId>
+                <version>3.0.0</version>
             </dependency>
         </dependencies>
     </dependencyManagement>
@@ -71,10 +68,6 @@
                     <configuration>
                         <source>${java.version}</source>
                         <target>${java.version}</target>
-                        <compilerArgs>
-                            <arg>--add-exports</arg>
-                            <arg>java.base/sun.security.util=ALL-UNNAMED</arg>
-                        </compilerArgs>
                     </configuration>
                 </plugin>
                 <plugin>
@@ -92,7 +85,7 @@
                 <plugin>
                     <groupId>org.springframework.boot</groupId>
                     <artifactId>spring-boot-maven-plugin</artifactId>
-                    <version>2.7.0</version>
+                    <version>3.1.2</version>
                     <executions>
                         <execution>
                             <goals>
