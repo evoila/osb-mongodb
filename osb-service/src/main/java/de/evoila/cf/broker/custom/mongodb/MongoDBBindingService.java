@@ -32,9 +32,11 @@ public class MongoDBBindingService extends BindingServiceImpl {
     private Logger log = LoggerFactory.getLogger(MongoDBBindingService.class);
 
     private static String URI = "uri";
+    private static String TLSURI = "tls-uri";
     private static String USERNAME = "user";
     private static String PASSWORD = "password";
     private static String DATABASE = "database";
+    private static String CERT = "ca-cert";
 
     private MongoDBCustomImplementation mongoDBCustomImplementation;
 
@@ -82,12 +84,15 @@ public class MongoDBBindingService extends BindingServiceImpl {
 
         String dbURL = "mongodb://%s:%s@%s/%s?replicaSet=%s".formatted(username, password, endpoint, database, serviceInstance.getId().replace("-", ""));
 
+        String ca = credentialStore.getCertificate(serviceInstance.getId(), "server_ca").getCertificateAuthority();
 
         Map<String, Object> credentials = new HashMap<String, Object>();
         credentials.put(URI, dbURL);
+        credentials.put(TLSURI, dbURL+"&tls=true");
         credentials.put(USERNAME, username);
         credentials.put(PASSWORD, password);
         credentials.put(DATABASE, database);
+        credentials.put(CERT, ca);
 
         return credentials;
     }

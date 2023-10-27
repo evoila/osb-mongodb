@@ -2,12 +2,12 @@
 name: osb-bosh-mongodb
 
 releases:
-- name: osb-bosh-mongodb
-  version: latest
-- name: prometheus
-  version: latest
-- name: osb-bosh-backup-agent
-  version: latest
+  - name: osb-bosh-mongodb
+    version: 0.2.20
+  - name: prometheus
+    version: latest
+  - name: osb-bosh-backup-agent
+    version: latest
 
 update:
   canaries: 1
@@ -19,6 +19,28 @@ stemcells:
 - alias: default
   os: ubuntu-xenial
   version: latest
+
+features:
+  use_dns_addresses: false
+
+variables:
+  - name: server_ca
+    options:
+      common_name: Identity Credentials Intermediate CA
+      is_ca: true
+    type: certificate
+  - name: server_cert
+    options:
+      ca: server_ca
+      common_name: Identity Credentials Intermediate CA
+      is_ca: false
+      extended_key_usage:
+        - server_auth
+    consumes:
+      alternative_name:
+        from: mongo-address
+        properties: { wildcard: true }
+    type: certificate
 
 instance_groups:
 - name: mongodb
@@ -33,9 +55,22 @@ instance_groups:
   jobs:
   - name: mongodb
     release: osb-bosh-mongodb
+    custom_provider_definitions:
+      - name: mongo-address
+        type: address
+    provides:
+      mongo-address:
+        as: mongo-address
+        aliases: []
     properties:
       mongodb:
         version: 4
+        tls:
+          mode: allowTLS
+          ca: ((server_cert.ca))
+          cakey: ((server_ca.private_key))
+          cert: ((server_cert.certificate))((server_cert.ca))
+          key: ((server_cert.private_key))
         auth:
           admin_users:
           - username: ((root_credentials.username))
