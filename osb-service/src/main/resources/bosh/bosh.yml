@@ -82,7 +82,6 @@ instance_groups:
             password: ((backup_credentials.password))
           replica-set:
             keyfile: ((replicaSetKey))
-        datadir: /var/vcap/store/mongodb3/
 ## disable mongodb exporter https://github.com/bosh-prometheus/prometheus-boshrelease/issues/413
 #  - name: mongodb_exporter
 #    release: prometheus
