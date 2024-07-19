@@ -65,19 +65,24 @@ instance_groups:
     properties:
       mongodb:
         version: 4
+        tls:
+          mode: allowTLS
+          ca: ((server_cert.ca))
+          cakey: ((server_ca.private_key))
+          cert: ((server_cert.certificate))((server_cert.ca))
+          key: ((server_cert.private_key))
         auth:
           admin_users:
-            - username: ((root_credentials.username))
-              password: ((root_credentials.password))
-            - username: ((exporter_credentials.username))
-              password: ((exporter_credentials.password))
+          - username: ((root_credentials.username))
+            password: ((root_credentials.password))
+          - username: ((exporter_credentials.username))
+            password: ((exporter_credentials.password))
           backup_users:
-            - username: ((backup_credentials.username))
-              password: ((backup_credentials.password))
+          - username: ((backup_credentials.username))
+            password: ((backup_credentials.password))
           replica-set:
             keyfile: ((replicaSetKey))
         datadir: /var/vcap/store/mongodb3/
-
 ## disable mongodb exporter https://github.com/bosh-prometheus/prometheus-boshrelease/issues/413
 #  - name: mongodb_exporter
 #    release: prometheus
@@ -92,11 +97,4 @@ instance_groups:
         username: ((backup_agent_credentials.username))
         password: ((backup_agent_credentials.password))
         scripts_path: /var/vcap/jobs/mongodb/backup
-  properties:
-    mongodb:
-      tls:
-        mode: allowTLS
-        ca: ((server_cert.ca))
-        cakey: ((server_ca.private_key))
-        cert: ((server_cert.certificate))((server_cert.ca))
-        key: ((server_cert.private_key))
+
