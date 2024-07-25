@@ -16,10 +16,7 @@ import de.evoila.cf.security.credentials.CredentialStore;
 import de.evoila.cf.security.credentials.database.DatabaseCredentialsClient;
 import org.springframework.core.env.Environment;
 
-import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * @author Yannic Remmet, Johannes Hiemer.
@@ -49,9 +46,13 @@ public class MongoDBDeploymentManager extends DeploymentManager {
             properties.putAll(customParameters);
         log.debug("Updating Deployment Manifest, replacing parameters");
         setManifestMetadataFromPlan(manifest, plan);
-        InstanceGroup instanceGroup =  manifest.getInstanceGroup("mongodb").get();
-        JobV2 mongoJob = instanceGroup.getJob("mongodb").get();
-        Map<String, Object> mongodb_properties = getProperty(mongoJob.getProperties(),"mongodb");
+        Optional<InstanceGroup> optionalInstanceGroup = manifest.getInstanceGroup("mongodb");
+        InstanceGroup instanceGroup = optionalInstanceGroup.orElseGet(InstanceGroup::new);
+        //Original solution that accesses the job-properties
+        //JobV2 mongoJob = instanceGroup.getJob("mongodb").get();
+        //Map<String, Object> mongodb_properties = getProperty(mongoJob.getProperties(),"mongodb");
+        //Now accessing instance_group[mongodb].properties instead
+        Map<String, Object> mongodb_properties = getProperty(instanceGroup.getProperties(),"mongodb");
 
 
 
