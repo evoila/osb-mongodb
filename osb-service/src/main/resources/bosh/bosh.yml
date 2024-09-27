@@ -78,7 +78,7 @@ instance_groups:
         scripts_path: /var/vcap/jobs/mongodb/backup
   properties:
     mongodb:
-      version: 4
+      version: 6
       tls:
         mode: allowTLS
         ca: ((server_cert.ca))
