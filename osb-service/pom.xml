@@ -6,7 +6,7 @@
     <artifactId>osb-mongodb</artifactId>
     <packaging>jar</packaging>
     <name>osb-mongodb</name>
-    <version>1.2.3</version>
+    <version>1.2.4</version>
 
     <parent>
         <groupId>de.evoila.cf.broker</groupId>
@@ -65,7 +65,7 @@
             <groupId>com.github.fakemongo</groupId>
             <artifactId>fongo</artifactId>
             <version>2.2.0-RC2</version>
-            <scope>test</scope>
+            <scope>test</scope>ls
         </dependency>
     </dependencies>
 
