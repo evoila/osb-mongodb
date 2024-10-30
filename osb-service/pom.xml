@@ -55,6 +55,7 @@
             <artifactId>persistence-mongodb</artifactId>
             <version>${persistence.version}</version>
         </dependency>
+
         <dependency>
             <groupId>de.evoila.cf.broker</groupId>
             <artifactId>bosh</artifactId>
@@ -65,7 +66,7 @@
             <groupId>com.github.fakemongo</groupId>
             <artifactId>fongo</artifactId>
             <version>2.2.0-RC2</version>
-            <scope>test</scope>ls
+            <scope>test</scope>
         </dependency>
     </dependencies>
 
