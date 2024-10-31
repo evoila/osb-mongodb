@@ -89,8 +89,11 @@ public class MongoDBDeploymentManager extends DeploymentManager {
 
 
             if(credentialStore instanceof DatabaseCredentialsClient){
-                JobV2 backupJob = instanceGroup.getJob("backup-agent").get();
-                Map<String, Object> backup_properties = getProperty(backupJob.getProperties(), "backup_agent");
+                instanceGroup.getJob("backup-agent").ifPresent(backupJob -> {
+                    Map<String, Object> backup_properties = getProperty(backupJob.getProperties(), "backup_agent");
+                    backup_properties.put("username", backupAgentCredential.getUsername());
+                    backup_properties.put("password", backupAgentCredential.getPassword());
+                });
 
                 if (properties.containsKey("version")){
                     mongodb_properties.put("version", properties.get("version"));
@@ -124,10 +127,6 @@ public class MongoDBDeploymentManager extends DeploymentManager {
                 // Map<String, Object> exporter_properties = getProperty(exportJob.getProperties(), "mongodb_exporter");
                 // Map<String, Object> exporter_properties_mongodb = getProperty(exporter_properties,"mongodb");
                 // exporter_properties_mongodb.put("uri", "mongodb://" + exporterCredential.getUsername() + ":" + exporterCredential.getPassword() + "@127.0.0.1:27017/admin");
-
-                backup_properties.put("username", backupAgentCredential.getUsername());
-                backup_properties.put("password", backupAgentCredential.getPassword());
-
 
             }
         } else if (isUpdate && customParameters != null && !customParameters.isEmpty()) {
