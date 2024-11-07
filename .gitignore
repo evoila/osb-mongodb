@@ -28,3 +28,4 @@ ca.pem
 .idea/
 osb-service/src/main/resources/static/
 osb-service/src/main/resources/templates/
+/OSB-MongoDB-*/
