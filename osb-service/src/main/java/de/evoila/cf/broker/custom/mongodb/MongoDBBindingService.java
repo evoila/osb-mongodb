@@ -13,6 +13,8 @@ import de.evoila.cf.broker.service.AsyncBindingService;
 import de.evoila.cf.broker.service.impl.BindingServiceImpl;
 import de.evoila.cf.broker.util.ServiceInstanceUtils;
 import de.evoila.cf.cpi.CredentialConstants;
+import de.evoila.cf.cpi.bosh.MongoDBBoshPlatformService;
+import de.evoila.cf.cpi.bosh.deployment.manifest.Manifest;
 import de.evoila.cf.security.credentials.CredentialStore;
 import de.evoila.cf.security.credentials.database.DatabaseCredentialsClient;
 import org.slf4j.Logger;
@@ -42,16 +44,18 @@ public class MongoDBBindingService extends BindingServiceImpl {
     private MongoDBCustomImplementation mongoDBCustomImplementation;
 
     private CredentialStore credentialStore;
+    private MongoDBBoshPlatformService boshPlatformService;
 
     public MongoDBBindingService(BindingRepository bindingRepository, ServiceDefinitionRepository serviceDefinitionRepository,
                                  ServiceInstanceRepository serviceInstanceRepository, RouteBindingRepository routeBindingRepository,
                                  MongoDBCustomImplementation mongoDBCustomImplementation,
                                  JobRepository jobRepository, AsyncBindingService asyncBindingService,
-                                 PlatformRepository platformRepository, CredentialStore credentialStore) {
+                                 PlatformRepository platformRepository, CredentialStore credentialStore, MongoDBBoshPlatformService boshPlatformService) {
         super(bindingRepository, serviceDefinitionRepository, serviceInstanceRepository, routeBindingRepository,
                 jobRepository, asyncBindingService, platformRepository);
         this.credentialStore = credentialStore;
         this.mongoDBCustomImplementation = mongoDBCustomImplementation;
+        this.boshPlatformService = boshPlatformService;
     }
 
     @Override
@@ -73,8 +77,8 @@ public class MongoDBBindingService extends BindingServiceImpl {
 
         List<ServerAddress> mongodbHosts = serviceInstance.getHosts();
         String ingressInstanceGroup = plan.getMetadata().getIngressInstanceGroup();
-        if (ingressInstanceGroup != null && ingressInstanceGroup.length() > 0) {
-            mongodbHosts = ServiceInstanceUtils.filteredServerAddress(serviceInstance.getHosts(),ingressInstanceGroup);
+        if (ingressInstanceGroup != null && !ingressInstanceGroup.isEmpty()) {
+            mongodbHosts = ServiceInstanceUtils.filteredServerAddress(serviceInstance.getHosts(), ingressInstanceGroup);
         }
 
         String endpoint = ServiceInstanceUtils.connectionUrl(mongodbHosts);
@@ -87,13 +91,28 @@ public class MongoDBBindingService extends BindingServiceImpl {
 
         Map<String, Object> credentials = new HashMap<String, Object>();
         credentials.put(URI, dbURL);
-        credentials.put(TLSURI, dbURL+"&tls=true");
+        credentials.put(TLSURI, dbURL + "&tls=true");
         credentials.put(USERNAME, username);
         credentials.put(PASSWORD, password);
         credentials.put(DATABASE, database);
-        if(!(credentialStore instanceof DatabaseCredentialsClient)) credentials.put(CERT,
-                credentialStore.getCertificate(serviceInstance.getId(), "server_ca").getCertificateAuthority()
-        );
+        if (!(credentialStore instanceof DatabaseCredentialsClient)) {
+            try {
+                Manifest manifest = boshPlatformService.getDeployedManifest(serviceInstance);
+                String cert = "";
+                try {
+                    cert = ((Map<String, Object>) ((Map<String, Object>) manifest.getInstanceGroup("mongodb").get().getProperties().get("mongodb")).get("tls")).get("ca").toString().trim();
+                }
+                catch (Exception e) {
+                    log.warn(e.getMessage());
+                }
+                if (cert.equals("((server_ca))") || cert.equals("((server_cert.ca))"))
+                    cert = credentialStore.getCertificate(serviceInstance.getId(), "server_ca").getCertificate();
+
+                if(cert.trim().startsWith("--")) credentials.put(CERT, cert);
+            } catch (Exception e) {
+                log.warn(e.getMessage());
+            }
+        }
 
         return credentials;
     }

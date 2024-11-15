@@ -61,7 +61,9 @@ public class MongoDBDeploymentManager extends DeploymentManager {
             databases = new LinkedList<>();
             mongodb_properties.put("databases",databases);
         }
-        databases.add(MongoDBUtils.dbName(serviceInstance.getId()));
+        if(!databases.contains(MongoDBUtils.dbName(serviceInstance.getId())))
+            databases.add(MongoDBUtils.dbName(serviceInstance.getId()));
+
 
         Map<String, Object> auth = getProperty(mongodb_properties, "auth");
 
