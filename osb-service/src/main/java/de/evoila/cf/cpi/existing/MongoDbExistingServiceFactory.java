@@ -75,8 +75,16 @@ public class MongoDbExistingServiceFactory extends ExistingServiceFactory {
             credentialStore.deleteCredentials(serviceInstance, DefaultCredentialConstants.BACKUP_AGENT_CREDENTIALS);
         }
 
-        credentialStore.deleteCredentials(serviceInstance, CredentialConstants.ROOT_CREDENTIALS);
-        credentialStore.deleteCredentials(serviceInstance, DefaultCredentialConstants.BACKUP_CREDENTIALS);
+        try {
+            credentialStore.deleteCredentials(serviceInstance, CredentialConstants.ROOT_CREDENTIALS);
+            credentialStore.deleteCredentials(serviceInstance, CredentialConstants.EXPORTER_CREDENTIALS);
+            credentialStore.deleteCredentials(serviceInstance, DefaultCredentialConstants.BACKUP_CREDENTIALS);
+            credentialStore.deleteCertificate(serviceInstance, CredentialConstants.SERVER_CERT);
+            credentialStore.deleteCertificate(serviceInstance, CredentialConstants.SERVER_CA);
+        }
+        catch (Exception ex) {
+            log.warn("Exception deleting credentials and certificates: {}",ex.getMessage());
+        }
     }
 
     @Override

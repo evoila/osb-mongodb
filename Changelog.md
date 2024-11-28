@@ -1,5 +1,13 @@
 # Changelog
 
+## 27.11.2024 - v1.3.5
+- OSB-Mongodb 1.3.5
+- OSB-Bosh-Mongodb 0.3.3
+
+### Feature
+- new mongodb.tls.allowConnectionsWithoutCertificates property
+- new mongodb.tls.allowInvalidCertificates property
+
 ## 15.11.2024 - v1.3.4
 - OSB-Mongodb 1.3.4
 - OSB-Bosh-Mongodb 0.3.2

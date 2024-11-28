@@ -3,7 +3,7 @@ name: osb-bosh-mongodb
 
 releases:
   - name: osb-bosh-mongodb
-    version: 0.3.0
+    version: 0.3.3
   - name: prometheus
     version: latest
   - name: osb-bosh-backup-agent
@@ -85,6 +85,8 @@ instance_groups:
         cakey: ((server_ca.private_key))
         cert: ((server_cert.certificate))((server_cert.ca))
         key: ((server_cert.private_key))
+        allowConnectionsWithoutCertificates: true
+        allowInvalidCertificates: true
       auth:
         admin_users:
           - username: ((root_credentials.username))
